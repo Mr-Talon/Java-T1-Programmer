@@ -19,32 +19,32 @@
         </properties>
         <border type="none"/>
         <children>
-          <component id="4325d" class="javax.swing.JLabel">
+          <component id="4325d" class="javax.swing.JLabel" binding="DECState">
             <constraints/>
             <properties>
               <foreground color="-16777216"/>
-              <text value="Label"/>
+              <text value="DEX"/>
             </properties>
           </component>
-          <component id="be0d4" class="javax.swing.JLabel">
+          <component id="be0d4" class="javax.swing.JLabel" binding="HEXState">
             <constraints/>
             <properties>
               <foreground color="-16777216"/>
-              <text value="Label"/>
+              <text value="          "/>
             </properties>
           </component>
-          <component id="dcbeb" class="javax.swing.JLabel">
+          <component id="dcbeb" class="javax.swing.JLabel" binding="grammarError">
             <constraints/>
             <properties>
               <foreground color="-16777216"/>
-              <text value="Label"/>
+              <text value="          "/>
             </properties>
           </component>
-          <component id="a9c82" class="javax.swing.JLabel">
+          <component id="a9c82" class="javax.swing.JLabel" binding="overflowError">
             <constraints/>
             <properties>
               <foreground color="-16777216"/>
-              <text value="Label"/>
+              <text value="          "/>
             </properties>
           </component>
         </children>
@@ -1287,7 +1287,7 @@
             <properties>
               <font size="36" style="1"/>
               <foreground color="-16777216"/>
-              <text value="12345678"/>
+              <text value="00000000"/>
             </properties>
           </component>
           <hspacer id="4c726">
