@@ -3,13 +3,11 @@ import javax.swing.*;
 public class T1_Programmer {
     private JPanel root;
 
-    private JButton OFFButton;
     private JButton BACKSPACEButton;
     private JButton DiveideButton;
     private JButton MultipButton;
     private JButton MinusButton;
     private JButton AddButton;
-    private JButton EqualButton;
     private JButton a2SCButton;
     private JButton DotButton;
     private JButton a0Button;
@@ -35,11 +33,13 @@ public class T1_Programmer {
     private JButton a5Button;
     private JButton a2Button;
     private JButton a1Button;
+
+    private JLabel ans;
+    private JButton OFFButton;
+    private JButton EqualButton;
     private JButton HEXButton;
     private JButton LeftButton;
     private JButton RightButton;
-
-    private JLabel ans;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("T1_Programmer");
