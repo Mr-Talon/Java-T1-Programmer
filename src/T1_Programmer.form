@@ -1287,7 +1287,7 @@
             <properties>
               <font size="36" style="1"/>
               <foreground color="-16777216"/>
-              <text value="00000000"/>
+              <text value="          "/>
             </properties>
           </component>
           <hspacer id="4c726">
