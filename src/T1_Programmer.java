@@ -406,8 +406,15 @@ public class T1_Programmer{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (currentString.length()>0&&state==DEC){
-                    currentString=new Translation(currentString).Hexadecimal();
-                    ans.setText(currentString);
+                    if (currentString.contains(".")){
+                        error=INPUT_DOT_WHEN_HEX;
+                        grammarError.setText("GE");
+                        return;
+                    }
+                    else {
+                        currentString=new Translation(currentString).Hexadecimal();
+                        ans.setText(currentString);
+                    }
                 }
                 state=HEX;
                 DECState.setText("         ");
@@ -426,13 +433,22 @@ public class T1_Programmer{
                 if(currentString.length()>0){
                     currentString=currentString.substring(0,currentString.length()-1);
                     ans.setText(currentString);
+
                     //通过回退按钮使得当前输入文本没有溢出  就将溢出信号去除
-                    if (currentString.length()<8){
+                    if (error==INPUT_OVERFLOW&&currentString.length()<8){
                         error=0;
                         overflowError.setText("         ");
-                        if (currentString.length()==0){
-                            grammarError.setText("         ");
-                        }
+                    }
+
+                    if (error==INPUT_DOT_WHEN_HEX&&!currentString.contains(".")){
+                        error=0;
+                        grammarError.setText("         ");
+                    }
+
+                    //通过回退按钮使得当前输入文本清空 直接清除所有语法错误
+                    if (currentString.length()==0&&grammarError.getText()!=""){
+                        error=0;
+                        grammarError.setText("         ");
                     }
                 }
             }
