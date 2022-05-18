@@ -59,31 +59,34 @@ public class T1_Programmer{
     //错误信号
     private int error=0;
 
-    private final int HEX_INPUT_WHEN_DEX =3;
-    private final int INPUT_DOT_WHEN_HEX =4;
-    private final int INPUT_OVERFLOW=5;
-    private final int OUTPUT_OVERFLOW=6;
+    private final int HEX_INPUT_WHEN_DEX =3;   //在10进制情况下 输入a-f
+    private final int INPUT_DOT_WHEN_HEX =4;   //在16进制输入小数点
+    private final int INPUT_OVERFLOW=5;     //输入溢出
+    private final int OUTPUT_OVERFLOW=6;    //输出溢出
+    private final int MISS_PARENTHESES=7;   //缺少括号
 
     private String expression="";   //总表达式
     private String currentString="";   //当前需要展示在JLabel ans上字符串
 
-
+    //程序中需要的临时变量
+    private int numOfLeftParentheses=0;
+    private int numOfRightParentheses=0;
 
 
     public T1_Programmer() {
-        /*0-9数字输入的事件处理，有输入溢出判定*/
+        /*0-9数字输入的事件处理*/
         a1Button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (error==0){
-                    if (currentString.length()<8){
+                if (error==0){          //如果当前错误信号存在不允许输入
+                    if (currentString.length()<8){           //没有溢出 正常进行
                         String text=a1Button.getText();
                         currentString+=text;
                         ans.setText(currentString);
                     }
                     else {
-                        error=INPUT_OVERFLOW;
-                        overflowError.setText("OF");
+                        error=INPUT_OVERFLOW;        //内部错误信号
+                        overflowError.setText("OF");    //计算器界面显示溢出错误
                     }
                 }
             }
@@ -218,9 +221,17 @@ public class T1_Programmer{
         });
         a0Button.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {    //按钮0需要防止过多的0输入
+                //表达式开头只有在小数点输入的时候可以是0，而且这个时候0一定是字符串的首个元素  如果第一个元素输入了0，第二个元素输入小数点
+                //就不会进入return的分支，因为此时字符串长度已经等于2
+                //只有在开头连续输入0 才是不被允许的 这里不返回错误信号  指示不允许用户这么输入
                 if (error==0){
                     if (currentString.length()<8){
+                        if(currentString.length()==1){
+                            if (currentString.charAt(0) == '0'){
+                                return;
+                            }
+                        }
                         String text="0";
                         currentString+=text;
                         ans.setText(currentString);
@@ -231,7 +242,7 @@ public class T1_Programmer{
                     }
                 }
             }
-        });
+        });   //0只能在开头出现一次
 
         /*a-f数字输入的事件处理，有输入溢出判定，还有语法错误判定*/
         aButton.addActionListener(new ActionListener() {
@@ -239,11 +250,11 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
-                        if (state==DEC){
+                        if (state==DEC){       //对于a-f的字符 只能在16进制输入状态下输入
                             error=HEX_INPUT_WHEN_DEX;
                             grammarError.setText("GE");
                         }
-                        else {
+                        else {      //正确输入情况
                             String text=aButton.getText();
                             currentString+=text;
                             ans.setText(currentString);
@@ -367,18 +378,60 @@ public class T1_Programmer{
             }
         });
 
+        /*小数点按钮的事件处理*/
         DotButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (state==HEX||currentString.length()==0){
-                    error=INPUT_DOT_WHEN_HEX;
-                    grammarError.setText("GE");
+                if(error==0){
+                    if (state==HEX){    //语法错误1：16进制的情况下输入小数点
+                        error=INPUT_DOT_WHEN_HEX;
+                        grammarError.setText("GE");
+                    }
+                    else {    //十进制模式
+                        if (currentString.length()<8){
+                            if (currentString.contains(".")){   //如果字符串中已经有了小数点就不可以再次加入
+                                return;
+                            }
+                            String text=".";     //正常输入的情况
+                            currentString+=text;
+                            ans.setText(currentString);
+                        }
+                        else {           //小数点造成的溢出
+                            error=INPUT_OVERFLOW;
+                            overflowError.setText("OF");
+                        }
+                    }
                 }
-                else {
+            }
+        });
+
+        //括号的事件处理
+        LeftButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (error==0){
                     if (currentString.length()<8){
-                        String text=".";
+                        String text="(";
                         currentString+=text;
                         ans.setText(currentString);
+                        numOfLeftParentheses++;
+                    }
+                    else {
+                        error=INPUT_OVERFLOW;
+                        overflowError.setText("OF");
+                    }
+                }
+            }
+        });
+        RightButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (error==0){
+                    if (currentString.length()<8){
+                        String text=")";
+                        currentString+=text;
+                        ans.setText(currentString);
+                        numOfRightParentheses++;
                     }
                     else {
                         error=INPUT_OVERFLOW;
@@ -392,36 +445,49 @@ public class T1_Programmer{
         DECButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (currentString.length()>0&&state==HEX){
-                    currentString=new Translation(currentString).Decimal();
-                    ans.setText(currentString);
-                }
-                state=DEC;
-                DECState.setText("DEC");
-                HEXState.setText("         ");
+                if (error==0||error==INPUT_DOT_WHEN_HEX){
+                    //只有在当前输入框中只有数字的时候才有转换成十进制
+                    if (currentString.length()>0&&state==HEX&&notContainSymbol(currentString)){
+                        currentString=new Translation(currentString).Decimal();
+                        ans.setText(currentString);
+                    }
+                    //状态变化是一直需要执行的
+                    state=DEC;
+                    DECState.setText("DEC");
+                    HEXState.setText("         ");
 
+                    //16进制输入小数点产生的错误回到10进制应该消除
+                    if (error==INPUT_DOT_WHEN_HEX){
+                        error=0;
+                        grammarError.setText("         ");
+                    }
+                }
             }
         });
         HEXButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (currentString.length()>0&&state==DEC){
-                    if (currentString.contains(".")){
-                        error=INPUT_DOT_WHEN_HEX;
-                        grammarError.setText("GE");
-                        return;
+                if (error==0||error==HEX_INPUT_WHEN_DEX){
+                    //只有在当前输入框中只有数字的时候才有转换成十六进制
+                    if (currentString.length()>0&&state==DEC&&notContainSymbol(currentString)){
+                        if (currentString.contains(".")){   //十进制小数无法转换成16进制
+                            error=INPUT_DOT_WHEN_HEX;
+                            grammarError.setText("GE");
+                            return;
+                        }
+                        else {
+                            currentString=new Translation(currentString).Hexadecimal();
+                            ans.setText(currentString);
+                        }
                     }
-                    else {
-                        currentString=new Translation(currentString).Hexadecimal();
-                        ans.setText(currentString);
+                    state=HEX;
+                    DECState.setText("         ");
+                    HEXState.setText("HEX");
+
+                    if (error==HEX_INPUT_WHEN_DEX){   //如果已经触发了输入语法错误 通过转换状态应该消除错误信号
+                        error=0;
+                        grammarError.setText("         ");
                     }
-                }
-                state=HEX;
-                DECState.setText("         ");
-                HEXState.setText("HEX");
-                if (error==3){
-                    error=0;
-                    grammarError.setText("         ");
                 }
             }
         });
@@ -440,6 +506,8 @@ public class T1_Programmer{
                         overflowError.setText("         ");
                     }
 
+                    //这个错误会在两种情况发生 一个是16进制模式下输入了小数点 一个是10进制小数转换成16进制
+                    //如果通过回退按钮删除了小数点 这个错误信号应该消失
                     if (error==INPUT_DOT_WHEN_HEX&&!currentString.contains(".")){
                         error=0;
                         grammarError.setText("         ");
@@ -461,12 +529,29 @@ public class T1_Programmer{
                 ans.setText(currentString);
                 expression="";
 
+                numOfLeftParentheses=0;
+                numOfRightParentheses=0;
+
                 //清零按钮按下之后 所有错误信号和所有输入全部清空
                 error=0;
                 overflowError.setText("         ");
                 grammarError.setText("         ");
             }
         });
+    }
+
+    public boolean notContainSymbol(String currentString){
+        return  !currentString.contains("+") &&
+                !currentString.contains("-") &&
+                !currentString.contains("×") &&
+                !currentString.contains("÷") &&
+                !currentString.contains("(") &&
+                !currentString.contains(")") &&
+                !currentString.contains("&") &&
+                !currentString.contains("|") &&
+                !currentString.contains("^") &&
+                !currentString.contains("<<") &&
+                !currentString.contains(">>");
 
     }
 
