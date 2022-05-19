@@ -1,6 +1,5 @@
 import java.util.HashMap;
 import java.util.Stack;
-
 /**
  * @author 3dfish2dweb
  * @description 实现计算功能
@@ -28,9 +27,9 @@ public class Calculator {
     private static void eval(){ //只有十进制的时候可以计算小数
         double x = 0;
         char c = op.peek(); op.pop();
+        if(c == '(') return; // 左括号无效，直接返回
         double b = num.peek(); num.pop();
         double a = num.peek(); num.pop();
-//        System.out.printf("%f%c%f = ", a, c, b);
         switch (c) {
             case '+': x = a + b; break;
             case '-': x = a - b; break;
@@ -58,7 +57,6 @@ public class Calculator {
             case '^' : x = ((int)a ^ (int)b); break;
             case '&' : x = ((int)a & (int)b); break;
         }
-//        System.out.printf("%f\n", x);
         num.push(x);
     }
     public static double compute(String s){ //静态方法，直接使用类名.方法名调用
