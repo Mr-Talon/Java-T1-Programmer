@@ -64,6 +64,8 @@ public class T1_Programmer{
     private final int INPUT_OVERFLOW=5;     //输入溢出
     private final int OUTPUT_OVERFLOW=6;    //输出溢出
     private final int MISS_PARENTHESES=7;   //缺少括号
+    private final int SC1_WHEN_DEC=8;      //在10进制的时候使用反码按钮
+    private final int SC2_WHEN_DEC=9;      //在10进制的时候使用补码按钮
 
     private String expression="";   //总表达式
     private String currentString="";   //当前需要展示在JLabel ans上字符串
@@ -80,6 +82,9 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){          //如果当前错误信号存在不允许输入
                     if (currentString.length()<8){           //没有溢出 正常进行
+                        if (currentString.contains("(")||currentString.contains(")")){
+                            currentString="";
+                        }
                         String text=a1Button.getText();
                         currentString+=text;
                         ans.setText(currentString);
@@ -96,6 +101,9 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if (currentString.contains("(")||currentString.contains(")")){
+                            currentString="";
+                        }
                         String text=a2Button.getText();
                         currentString+=text;
                         ans.setText(currentString);
@@ -112,6 +120,9 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if (currentString.contains("(")||currentString.contains(")")){
+                            currentString="";
+                        }
                         String text=a3Button.getText();
                         currentString+=text;
                         ans.setText(currentString);
@@ -128,6 +139,9 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if (currentString.contains("(")||currentString.contains(")")){
+                            currentString="";
+                        }
                         String text=a4Button.getText();
                         currentString+=text;
                         ans.setText(currentString);
@@ -144,6 +158,9 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if (currentString.contains("(")||currentString.contains(")")){
+                            currentString="";
+                        }
                         String text=a5Button.getText();
                         currentString+=text;
                         ans.setText(currentString);
@@ -160,6 +177,9 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if (currentString.contains("(")||currentString.contains(")")){
+                            currentString="";
+                        }
                         String text=a6Button.getText();
                         currentString+=text;
                         ans.setText(currentString);
@@ -176,6 +196,9 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if (currentString.contains("(")||currentString.contains(")")){
+                            currentString="";
+                        }
                         String text=a7Button.getText();
                         currentString+=text;
                         ans.setText(currentString);
@@ -192,6 +215,9 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if (currentString.contains("(")||currentString.contains(")")){
+                            currentString="";
+                        }
                         String text=a8Button.getText();
                         currentString+=text;
                         ans.setText(currentString);
@@ -208,6 +234,9 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if (currentString.contains("(")||currentString.contains(")")){
+                            currentString="";
+                        }
                         String text=a9Button.getText();
                         currentString+=text;
                         ans.setText(currentString);
@@ -232,6 +261,9 @@ public class T1_Programmer{
                                 return;
                             }
                         }
+                        if (currentString.contains("(")||currentString.contains(")")){
+                            currentString="";
+                        }
                         String text="0";
                         currentString+=text;
                         ans.setText(currentString);
@@ -255,6 +287,9 @@ public class T1_Programmer{
                             grammarError.setText("GE");
                         }
                         else {      //正确输入情况
+                            if (currentString.contains("(")||currentString.contains(")")){
+                                currentString="";
+                            }
                             String text=aButton.getText();
                             currentString+=text;
                             ans.setText(currentString);
@@ -277,6 +312,9 @@ public class T1_Programmer{
                             grammarError.setText("GE");
                         }
                         else {
+                            if (currentString.contains("(")||currentString.contains(")")){
+                                currentString="";
+                            }
                             String text=bButton.getText();
                             currentString+=text;
                             ans.setText(currentString);
@@ -299,6 +337,9 @@ public class T1_Programmer{
                             grammarError.setText("GE");
                         }
                         else {
+                            if (currentString.contains("(")||currentString.contains(")")){
+                                currentString="";
+                            }
                             String text=cButton.getText();
                             currentString+=text;
                             ans.setText(currentString);
@@ -321,6 +362,9 @@ public class T1_Programmer{
                             grammarError.setText("GE");
                         }
                         else {
+                            if (currentString.contains("(")||currentString.contains(")")){
+                                currentString="";
+                            }
                             String text=dButton.getText();
                             currentString+=text;
                             ans.setText(currentString);
@@ -343,6 +387,9 @@ public class T1_Programmer{
                             grammarError.setText("GE");
                         }
                         else {
+                            if (currentString.contains("(")||currentString.contains(")")){
+                                currentString="";
+                            }
                             String text=eButton.getText();
                             currentString+=text;
                             ans.setText(currentString);
@@ -365,6 +412,9 @@ public class T1_Programmer{
                             grammarError.setText("GE");
                         }
                         else {
+                            if (currentString.contains("(")||currentString.contains(")")){
+                                currentString="";
+                            }
                             String text=fButton.getText();
                             currentString+=text;
                             ans.setText(currentString);
@@ -392,6 +442,9 @@ public class T1_Programmer{
                             if (currentString.contains(".")){   //如果字符串中已经有了小数点就不可以再次加入
                                 return;
                             }
+                            if (currentString.contains("(")||currentString.contains(")")){
+                                currentString="";
+                            }
                             String text=".";     //正常输入的情况
                             currentString+=text;
                             ans.setText(currentString);
@@ -410,33 +463,33 @@ public class T1_Programmer{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
-                    if (currentString.length()<8){
-                        String text="(";
-                        currentString+=text;
-                        ans.setText(currentString);
-                        numOfLeftParentheses++;
+                    if (currentString.contains("(")||currentString.contains(")")){
+                        currentString="";
                     }
-                    else {
-                        error=INPUT_OVERFLOW;
-                        overflowError.setText("OF");
-                    }
+                    String text="(";
+                    currentString+=text;
+                    ans.setText(currentString);
+                    expression+=currentString;
+                    numOfLeftParentheses++;
                 }
             }
         });
+
         RightButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
-                    if (currentString.length()<8){
-                        String text=")";
-                        currentString+=text;
-                        ans.setText(currentString);
-                        numOfRightParentheses++;
+                    if (currentString.contains("(")||currentString.contains(")")){
+                        currentString="";
                     }
-                    else {
-                        error=INPUT_OVERFLOW;
-                        overflowError.setText("OF");
-                    }
+                    expression+=currentString;   //右括号和左括号不同 左括号可以理解为一个字符 右括号需要理解为一个操作符
+                    currentString="";   //输入有操作符 代表前一个操作数的结束  需要把操作数置入总表达式
+
+                    String text=")";
+                    currentString+=text;
+                    ans.setText(currentString);
+                    expression+=currentString;
+                    numOfRightParentheses++;
                 }
             }
         });
@@ -449,7 +502,15 @@ public class T1_Programmer{
                     //只有在当前输入框中只有数字的时候才有转换成十进制
                     if (currentString.length()>0&&state==HEX&&notContainSymbol(currentString)){
                         currentString=new Translation(currentString).Decimal();
-                        ans.setText(currentString);
+                        if(currentString.length()>8){
+                            currentString="";
+                            error=OUTPUT_OVERFLOW;
+                            overflowError.setText("OF");
+                            System.out.println(currentString);
+                        }
+                        else {
+                            ans.setText(currentString);
+                        }
                     }
                     //状态变化是一直需要执行的
                     state=DEC;
@@ -467,7 +528,7 @@ public class T1_Programmer{
         HEXButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (error==0||error==HEX_INPUT_WHEN_DEX){
+                if (error==0||error==HEX_INPUT_WHEN_DEX||error==SC1_WHEN_DEC||error==SC2_WHEN_DEC){
                     //只有在当前输入框中只有数字的时候才有转换成十六进制
                     if (currentString.length()>0&&state==DEC&&notContainSymbol(currentString)){
                         if (currentString.contains(".")){   //十进制小数无法转换成16进制
@@ -484,7 +545,7 @@ public class T1_Programmer{
                     DECState.setText("         ");
                     HEXState.setText("HEX");
 
-                    if (error==HEX_INPUT_WHEN_DEX){   //如果已经触发了输入语法错误 通过转换状态应该消除错误信号
+                    if (error==HEX_INPUT_WHEN_DEX||error==SC1_WHEN_DEC||error==SC2_WHEN_DEC){   //如果已经触发了输入语法错误 通过转换状态应该消除错误信号
                         error=0;
                         grammarError.setText("         ");
                     }
@@ -498,7 +559,6 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if(currentString.length()>0){
                     currentString=currentString.substring(0,currentString.length()-1);
-                    ans.setText(currentString);
 
                     //通过回退按钮使得当前输入文本没有溢出  就将溢出信号去除
                     if (error==INPUT_OVERFLOW&&currentString.length()<8){
@@ -513,10 +573,15 @@ public class T1_Programmer{
                         grammarError.setText("         ");
                     }
 
-                    //通过回退按钮使得当前输入文本清空 直接清除所有语法错误
+                    //通过回退按钮使得当前输入文本清空 直接清除所有错误
                     if (currentString.length()==0&&grammarError.getText()!=""){
                         error=0;
                         grammarError.setText("         ");
+                        overflowError.setText("         ");
+                    }
+
+                    if(error==0){
+                        ans.setText(currentString);
                     }
                 }
             }
@@ -538,13 +603,43 @@ public class T1_Programmer{
                 grammarError.setText("         ");
             }
         });
+
+        /*功能按键 乘法按钮*/
+        MultipButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (error==0){
+                    if (expression.length()==0&&currentString.length()==0){   //表达式的最前面不应该是乘号
+                        return;
+                    }
+                    if (state==DEC){      //十进制直接将当前字符串写入总表达式
+                        expression+=currentString;
+                        currentString="";
+                        ans.setText(currentString);
+                        System.out.println(expression);
+                    }
+                    else if (state==HEX){    //十六进制将当前字符串先转换成10进制 算法只处理十进制
+                        String temp=new Translation(currentString).Decimal();
+                        expression+=temp;
+                        currentString="";
+                        ans.setText(currentString);
+                        System.out.println(expression);
+                    }
+                    //防止过多的符号输入
+                    String lastChar=expression.substring(expression.length()-1);
+                    if (notContainSymbol(lastChar)){
+                        expression+="*";
+                    }
+                }
+            }
+        });
     }
 
     public boolean notContainSymbol(String currentString){
         return  !currentString.contains("+") &&
                 !currentString.contains("-") &&
-                !currentString.contains("×") &&
-                !currentString.contains("÷") &&
+                !currentString.contains("*") &&
+                !currentString.contains("/") &&
                 !currentString.contains("(") &&
                 !currentString.contains(")") &&
                 !currentString.contains("&") &&
@@ -552,8 +647,8 @@ public class T1_Programmer{
                 !currentString.contains("^") &&
                 !currentString.contains("<<") &&
                 !currentString.contains(">>");
-
     }
+
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("T1_Programmer");
