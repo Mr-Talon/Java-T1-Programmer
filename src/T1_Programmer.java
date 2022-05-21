@@ -628,6 +628,27 @@ public class T1_Programmer{
             }
         });
 
+        /*功能按键 加法按钮*/
+        AddButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+        /*功能按键 减法按钮*/
+        MinusButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+        /*功能按键 等号按钮*/
+        EqualButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
         /*功能按键 乘法按钮*/
         MultipButton.addActionListener(new ActionListener() {
             @Override
@@ -806,6 +827,45 @@ public class T1_Programmer{
                         expression+="^";
                     }
                 }
+            }
+        });
+        /*功能按键 求反码按钮*/
+        a1SCButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(error==0){
+                    if (state==DEC){    //10进制状态下不可以使用反码功能  会返回错误状态信号
+                        error=SC1_WHEN_DEC;
+                        grammarError.setText("GE");
+                    }
+                    else if (state==HEX){
+                        currentString=new Code_Trans().F_trans(currentString);
+                        ans.setText(currentString);
+                    }
+                }
+            }
+        });
+        /*功能按键 求补码按钮*/
+        a2SCButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(error==0){
+                    if (state==DEC){    //10进制状态下不可以使用反码功能  会返回错误状态信号
+                        error=SC1_WHEN_DEC;
+                        grammarError.setText("GE");
+                    }
+                    else if (state==HEX){
+                        currentString=new Code_Trans().B_trans(currentString);
+                        ans.setText(currentString);
+                    }
+                }
+            }
+        });
+        /*功能按键 移位按钮*/
+        SHEButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
             }
         });
     }
