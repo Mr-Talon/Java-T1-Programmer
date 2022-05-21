@@ -1,5 +1,3 @@
-import java.util.Locale;
-
 /*
 16进制,10进制的反码，补码转换
 * */
@@ -9,6 +7,14 @@ public class Code_Trans {
         long n;//10进制数字
             n = Integer.parseInt(s, 16);//16进制转10进制
             str_bin=Long.toBinaryString(n);
+        StringBuilder str_bin_0=new StringBuilder(str_bin);
+        while(str_bin_0.length()%4!=0)
+        {
+            StringBuilder ST=new StringBuilder();
+            ST=ST.append('0').append(str_bin_0);
+            str_bin_0=ST;
+        }
+        str_bin=str_bin_0.toString();
             char[] str = str_bin.toCharArray();//包括符号位和数值位
         if(str[0]=='1'){
             for (int i = 1; i < str.length; i++)//转成反码，数值位取反
@@ -33,8 +39,16 @@ public class Code_Trans {
         //补码为反码+1
         String str_bin;//二进制字符串
         long n;//10进制数字
-            n = Integer.parseInt(s, 16);//16进制转10进制
-            str_bin=Long.toBinaryString(n);
+        n = Integer.parseInt(s, 16);//16进制转10进制
+        str_bin=Long.toBinaryString(n);
+        StringBuilder str_bin_0=new StringBuilder(str_bin);
+        while(str_bin_0.length()%4!=0)
+        {
+            StringBuilder ST=new StringBuilder();
+            ST=ST.append('0').append(str_bin_0);
+            str_bin_0=ST;
+        }
+        str_bin=str_bin_0.toString();
             char[] str = str_bin.toCharArray();//字符串转换成字符数组好赋值
         if(str[0]=='1'){//负数
             for (int i = 1; i < str.length; i++)//转成反码，数值位取反
