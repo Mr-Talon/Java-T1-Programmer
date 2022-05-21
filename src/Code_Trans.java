@@ -1,3 +1,5 @@
+import java.util.Locale;
+
 /*
 16进制,10进制的反码，补码转换
 * */
@@ -21,7 +23,7 @@ public class Code_Trans {
             n= Integer.parseInt(binaryStr, 2);//2进制转回10进制
             String sbs;
             sbs=Long.toHexString(n);
-            return sbs;
+            return sbs.toUpperCase();
         }
          else {//正数,反码是本身
             return s;}
@@ -66,7 +68,7 @@ public class Code_Trans {
                 n= Integer.parseInt(binaryStr, 2);//2进制转回10进制
                 String sbs;
                 sbs=Long.toHexString(n);
-                return sbs;
+                return sbs.toUpperCase();
             } else {//整体有进位，唯一的：+0
                 return "0";}
         } else {//正数，补码是本身
