@@ -11,10 +11,10 @@ public class Code_Trans {
         if(str[0]=='1'){
             for (int i = 1; i < str.length; i++)//转成反码，数值位取反
             {
-                if (str[i] == 0)
-                    str[i] = 1;
+                if (str[i] == '0')
+                    str[i] = '1';
                 else
-                    str[i] = 0;
+                    str[i] = '0';
             }
             //二进制反码转十六进制
             String binaryStr = new String(str);//更新后的字符数组再转回字符串
@@ -37,10 +37,10 @@ public class Code_Trans {
         if(str[0]=='1'){//负数
             for (int i = 1; i < str.length; i++)//转成反码，数值位取反
             {
-                if (str[i] == 0)
-                    str[i] = 1;
+                if (str[i] == '0')
+                    str[i] = '1';
                 else
-                    str[i] = 0;
+                    str[i] = '0';
             }
             int index = -1;
             int i, flag = 0;
@@ -68,7 +68,7 @@ public class Code_Trans {
                 sbs=Long.toHexString(n);
                 return sbs;
             } else {//整体有进位，唯一的：+0
-                return "+0";}
+                return "0";}
         } else {//正数，补码是本身
             return s;}
     }
