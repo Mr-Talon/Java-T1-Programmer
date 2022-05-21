@@ -4,21 +4,12 @@
 public class Code_Trans {
     String F_trans(String s) {//反码
         String str_bin;//二进制字符串
-        StringBuilder un_str_buf = new StringBuilder();
         long n;//10进制数字
-        char[] flag_str = s.toCharArray();//判断正负
-        if (flag_str[0] == '-')//负数的情况
-        {
-            for (int k = 0; k < s.length(); k++) {//把数值位1~9,A~F提取出来，使成为无符号数
-                if (s.charAt(k) >= 48 && s.charAt(k) <= 57 || s.charAt(k) >= 65 && s.charAt(k) <= 70) {
-                    un_str_buf.append(s.charAt(k));
-                }
-            }
-            String un_str=new String(un_str_buf);
-            n = Integer.parseInt(un_str, 16);//16进制转10进制
+            n = Integer.parseInt(s, 16);//16进制转10进制
             str_bin=Long.toBinaryString(n);
-            char[] str = str_bin.toCharArray();//无符号 这里是数值位,只是把字符串转换成字符数组好赋值
-            for (int i = 0; i < str.length; i++)//转成反码，数值位取反
+            char[] str = str_bin.toCharArray();//包括符号位和数值位
+        if(str[0]=='1'){
+            for (int i = 1; i < str.length; i++)//转成反码，数值位取反
             {
                 if (str[i] == 0)
                     str[i] = 1;
@@ -30,37 +21,27 @@ public class Code_Trans {
             n= Integer.parseInt(binaryStr, 2);//2进制转回10进制
             String sbs;
             sbs=Long.toHexString(n);
-            return "-" + sbs;
-        } else {//正数,反码是本身
+            return sbs;
+        }
+         else {//正数,反码是本身
             return s;}
     }
 
     String B_trans(String s) {
         //补码为反码+1
         String str_bin;//二进制字符串
-        StringBuilder un_str_buf = new StringBuilder();
         long n;//10进制数字
-        char[] flag_str = s.toCharArray();//判断正负
-        if (flag_str[0] == '-')//负数的情况
-        {
-            for (int k = 0; k < s.length(); k++) {//把数值位1~9,A~F提取出来，使成为无符号数
-                if (s.charAt(k) >= 48 && s.charAt(k) <= 57 || s.charAt(k) >= 65 && s.charAt(k) <= 70) {
-                    un_str_buf.append(s.charAt(k));
-                }
-            }
-            String un_str=new String(un_str_buf);
-            n = Integer.parseInt(un_str, 16);//16进制转10进制
+            n = Integer.parseInt(s, 16);//16进制转10进制
             str_bin=Long.toBinaryString(n);
-            char[] str = str_bin.toCharArray();//无符号 这里是数值位,只是把字符串转换成字符数组好赋值
-            for (int i = 0; i < str.length; i++)//转成反码，数值位取反
+            char[] str = str_bin.toCharArray();//字符串转换成字符数组好赋值
+        if(str[0]=='1'){//负数
+            for (int i = 1; i < str.length; i++)//转成反码，数值位取反
             {
                 if (str[i] == 0)
                     str[i] = 1;
                 else
                     str[i] = 0;
             }
-
-
             int index = -1;
             int i, flag = 0;
             for (i = 0; i < str.length; i++) {
@@ -85,10 +66,10 @@ public class Code_Trans {
                 n= Integer.parseInt(binaryStr, 2);//2进制转回10进制
                 String sbs;
                 sbs=Long.toHexString(n);
-                return "-" + sbs;
+                return sbs;
             } else {//整体有进位，唯一的：+0
-                    return "+0";}
-    }else {//正数，补码是本身
+                return "+0";}
+        } else {//正数，补码是本身
             return s;}
     }
 }
