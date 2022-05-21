@@ -26,8 +26,6 @@ public class Calculator {
         priMap.put('-', 5);
         priMap.put('*', 6);
         priMap.put('/', 6);
-        // 初始化操作符栈底
-        op.push('(');
     }
     private static void eval(){ //只有十进制的时候可以计算小数
         double x = 0;
@@ -64,7 +62,14 @@ public class Calculator {
         }
         num.push(x);
     }
+    private static void init() {
+        while(!num.empty()) num.pop();
+        while(!op.empty()) op.pop();
+        op.push('('); //// 初始化操作符栈底
+    }
     public static double compute(String s){ //静态方法，直接使用类名.方法名调用
+//        System.out.println("get " + s);
+        init();
         int n = s.length();
         for (int i = 0; i < n; i ++ ) {
             if (Character.isDigit(s.charAt(i))) {
@@ -111,8 +116,9 @@ public class Calculator {
         }
         while (num.size() > 1) //使最后只剩一个数
             eval();
-
-        return num.peek();
+        double res = num.peek();
+//        System.out.println("return " + res);
+        return res;
     }
 }
 
