@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.math.BigDecimal;
 
 public class T1_Programmer{
     //窗体
@@ -646,7 +647,14 @@ public class T1_Programmer{
         EqualButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                if(error==0){
+                    expression+=currentString;
+                    System.out.println(expression);
+                    Double tempAns1=Calculator.compute(expression);
+                    BigDecimal tempAns2=BigDecimal.valueOf(tempAns1);
+                    currentString=tempAns2.stripTrailingZeros().toPlainString();
+                    ans.setText(currentString);
+                }
             }
         });
         /*功能按键 乘法按钮*/
