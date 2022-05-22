@@ -29,8 +29,14 @@ public class Calculator {
     }
     private static void eval(){ //只有十进制的时候可以计算小数
         double x = 0;
+        if(op.empty()) {
+            throw new NullPointerException("格式错误！");
+        }
         char c = op.peek(); op.pop();
         if(c == '(') return; // 左括号无效，直接返回
+        if(num.size() < 1) {
+            throw new NullPointerException("格式错误！");
+        }
         double b = num.peek(); num.pop();
         double a = num.peek(); num.pop();
         switch (c) {
@@ -68,7 +74,6 @@ public class Calculator {
         op.push('('); //// 初始化操作符栈底
     }
     public static double compute(String s){ //静态方法，直接使用类名.方法名调用
-//        System.out.println("get " + s);
         init();
         int n = s.length();
         for (int i = 0; i < n; i ++ ) {
@@ -116,9 +121,7 @@ public class Calculator {
         }
         while (num.size() > 1) //使最后只剩一个数
             eval();
-        double res = num.peek();
-//        System.out.println("return " + res);
-        return res;
+        return num.peek();
     }
 }
 
