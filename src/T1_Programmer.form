@@ -23,7 +23,7 @@
             <constraints/>
             <properties>
               <foreground color="-16777216"/>
-              <text value="DEX"/>
+              <text value="DEC"/>
             </properties>
           </component>
           <component id="be0d4" class="javax.swing.JLabel" binding="HEXState">
