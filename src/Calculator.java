@@ -1,3 +1,5 @@
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Stack;
 /**
@@ -8,17 +10,18 @@ import java.util.Stack;
  * 在这里，同样是利用栈进行一个中缀转后缀的操作，只不过我们的计算不是得到整个后缀表达式之后再计算，
  * 而是在中缀转后缀的过程中进行计算。
  * 因为后缀表达式是从前往后依次扫描，因此我们一旦确定了前部的某一段（包含开头），就可以提前将其计算出来，再放到原来位置，不影响最终结果。
+ *
+ * 为了计算方便，使用BigDecimal类模拟，精度较高，且可自动除末尾0
  * @create 2022/5/14 15:04
  */
 public class Calculator {
     private static final Stack<Character> op = new Stack<>(); // 存操作符
-    private static final Stack<Double> num = new Stack<>(); // 存操作数
+    private static final Stack<BigDecimal> num = new Stack<>(); // 存操作数
     private static final HashMap<Character, Integer> priMap = new HashMap<>(); // 优先级哈希表
     static {
         // 初始化哈希表
         priMap.put('(', 0);
         priMap.put('<', 1);
-        priMap.put('>', 1);
         priMap.put('|', 2);
         priMap.put('^', 3);
         priMap.put('&', 4);
@@ -28,7 +31,7 @@ public class Calculator {
         priMap.put('/', 6);
     }
     private static void eval(){ //只有十进制的时候可以计算小数
-        double x = 0;
+        BigDecimal x = new BigDecimal(0);
         if(op.empty()) {
             throw new NullPointerException("格式错误！");
         }
@@ -37,34 +40,35 @@ public class Calculator {
         if(num.size() < 1) {
             throw new NullPointerException("格式错误！");
         }
-        double b = num.peek(); num.pop();
-        double a = num.peek(); num.pop();
+        BigDecimal b = num.peek(); num.pop();
+        BigDecimal a = num.peek(); num.pop();
         switch (c) {
-            case '+': x = a + b; break;
-            case '-': x = a - b; break;
-            case '*': x = a * b; break;
+            case '+': x = a.add(b); break;
+            case '-': x = a.subtract(b); break;
+            case '*': x = a.multiply(b); break;
             case '/':
             {
-                if (Math.abs(b) < 1e-9)
+                try {
+                    x = a.divide(b, 8, RoundingMode.HALF_UP);// 保留8位小数， 四舍五入
+                } catch(ArithmeticException e) {
                     throw new ArithmeticException("除数不能为0！");
-                else x = a / b;
+                }
                 break;
             }
             case '<': {
-                for (int i = (int)b; i > 0; i -- )
-                    a *= 2;
+                int i = b.intValue();
+                x = new BigDecimal(2);
+                for ( ; i > 0; i -- )
+                    a = a.multiply(x);
+                for ( ; i < 0; i ++ )
+                    a = a.divide(x, 8, RoundingMode.HALF_UP);
                 x = a;
                 break;
             }
-            case '>' : {
-                for (int i = (int)b; i > 0; i -- )
-                    a /= 2;
-                x = a;
-                break;
-            }
-            case '|' : x = ((int)a | (int)b); break;
-            case '^' : x = ((int)a ^ (int)b); break;
-            case '&' : x = ((int)a & (int)b); break;
+
+            case '|' : x = new BigDecimal(a.intValue() | b.intValue()); break;
+            case '^' : x = new BigDecimal(a.intValue() ^ b.intValue()); break;
+            case '&' : x = new BigDecimal(a.intValue() & b.intValue()); break;
         }
         num.push(x);
     }
@@ -73,26 +77,31 @@ public class Calculator {
         while(!op.empty()) op.pop();
         op.push('('); //// 初始化操作符栈底
     }
-    public static double compute(String s){ //静态方法，直接使用类名.方法名调用
+    public static String compute(String s){ //静态方法，直接使用类名.方法名调用
         init();
         int n = s.length();
         for (int i = 0; i < n; i ++ ) {
             if (Character.isDigit(s.charAt(i))) {
-                double x = 0;
+                BigDecimal x = new BigDecimal(0);
                 int j = i, dot = 0;
                 while (j < n && Character.isDigit(s.charAt(j))) {
-                    x = x * 10 + (s.charAt(j) - '0');
+                    x = x.multiply(BigDecimal.valueOf(10));
+                    x = x.add(BigDecimal.valueOf(s.charAt(j) - '0'));
                     j ++;
                 }
                 if (j < n && s.charAt(j) == '.') { // 小数部分
                     j ++;
-                    double y = 0;
+                    BigDecimal y = new BigDecimal(0);
                     while (j < n && Character.isDigit(s.charAt(j))) {
-                        y = y * 10 + (s.charAt(j) - '0');
+                        y = y.multiply(BigDecimal.valueOf(10));
+                        y = y.add(BigDecimal.valueOf(s.charAt(j) - '0'));
                         j ++;
                         dot ++;
                     }
-                    x += y * (Math.pow(0.1, dot));
+                    for (int k = 0; k < dot; k ++ ) {
+                        y = y.divide(BigDecimal.valueOf(10), 8, RoundingMode.HALF_UP);
+                    }
+                    x = x.add(y);
                 }
                 i = j - 1;
                 num.push(x);
@@ -105,14 +114,14 @@ public class Calculator {
             } else
             {
                 char c = s.charAt(i);
-                if(c != '-' || (c == '-' && i > 0 && (Character.isDigit(s.charAt(i - 1)) || s.charAt(i - 1) == ')'))) { // 当前‘-’不是负号
+                if(c != '-' || (i > 0 && (Character.isDigit(s.charAt(i - 1)) || s.charAt(i - 1) == ')'))) { // 当前‘-’不是负号
 
                     while (!op.empty() && priMap.get(op.peek()) > priMap.get(c))
                         eval();
 
                     op.push(c);
                 } else { // 如果是负号，则相当于-1 * 这个数
-                    num.push(-1.0);
+                    num.push(BigDecimal.valueOf(-1.0));
                     while(!op.empty() && priMap.get(op.peek()) > priMap.get('*'))
                         eval();
                     op.push('*');
@@ -121,7 +130,7 @@ public class Calculator {
         }
         while (num.size() > 1) //使最后只剩一个数
             eval();
-        return num.peek();
+        return num.peek().stripTrailingZeros().toString(); //去末尾0且变为String
     }
 }
 

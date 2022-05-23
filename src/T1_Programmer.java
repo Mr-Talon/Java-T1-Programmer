@@ -650,7 +650,7 @@ public class T1_Programmer{
                 if(error==0){
                     expression+=currentString;
                     System.out.println(expression);
-                    Double tempAns1=Calculator.compute(expression);
+                    Double tempAns1=Double.valueOf(Calculator.compute(expression));
                     BigDecimal tempAns2=BigDecimal.valueOf(tempAns1);
                     currentString=tempAns2.stripTrailingZeros().toPlainString();
                     ans.setText(currentString);
