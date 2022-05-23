@@ -42,6 +42,7 @@ public class Calculator {
         }
         BigDecimal b = num.peek(); num.pop();
         BigDecimal a = num.peek(); num.pop();
+//        System.out.println(a.toString() + c + b.toString());
         switch (c) {
             case '+': x = a.add(b); break;
             case '-': x = a.subtract(b); break;
@@ -70,6 +71,7 @@ public class Calculator {
             case '^' : x = new BigDecimal(a.intValue() ^ b.intValue()); break;
             case '&' : x = new BigDecimal(a.intValue() & b.intValue()); break;
         }
+//        System.out.println(x.toString());
         num.push(x);
     }
     private static void init() {
@@ -116,7 +118,7 @@ public class Calculator {
                 char c = s.charAt(i);
                 if(c != '-' || (i > 0 && (Character.isDigit(s.charAt(i - 1)) || s.charAt(i - 1) == ')'))) { // 当前‘-’不是负号
 
-                    while (!op.empty() && priMap.get(op.peek()) > priMap.get(c))
+                    while (!op.empty() && priMap.get(op.peek()) >= priMap.get(c))
                         eval();
 
                     op.push(c);
