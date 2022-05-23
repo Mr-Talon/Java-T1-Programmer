@@ -716,42 +716,42 @@ public class T1_Programmer{
                             expression+=currentString;
                         }
 
-                        double tempAns1=Calculator.compute(expression);    //计算结果返回一个浮点数
-                        BigDecimal tempAns2=BigDecimal.valueOf(tempAns1);    //将浮点数转换成 大整数类型  方便对于多余的0的处理
-                        currentString=tempAns2.stripTrailingZeros().toPlainString();
+                        currentString=Calculator.compute(expression);    //计算结果返回一个字符串
+//                        currentString=tempAns2.stripTrailingZeros().toPlainString();
                         currentString=new Translation(currentString).Hexadecimal();
                         ans.setText(currentString);
                         expression="";
                     }
                     else{//10进制走这条分支
-                        double Up = 99999999.0;    //10进制上界
-                        double Down = -9999999.0;    //10进制下界
                         expression+=currentString;
-                        Double tempAns1=Calculator.compute(expression);    //计算结果返回一个浮点数
-                        System.out.println(tempAns1);
+                        currentString=Calculator.compute(expression);    //计算结果返回一个浮点数
+                        ans.setText(currentString);
+                        expression="";
 
-                        //计算结果后处理
-                        if (tempAns1<=Up &&tempAns1>=Down){
-                            //得到的结果在10进制表示范围内
-                            if (tempAns1.toString().length()>9){    //对于无限小数
-                                BigDecimal tempAns2=BigDecimal.valueOf(tempAns1);    //将浮点数转换成 大整数类型  方便对于多余的0的处理
-                                currentString=tempAns2.stripTrailingZeros().toPlainString();  //去除多余的0
-                                int point=currentString.indexOf(".");
-                                int need_to_left=8-point-1;
-
-                            }
-                            else {
-                                BigDecimal tempAns2=BigDecimal.valueOf(tempAns1);    //将浮点数转换成 大整数类型  方便对于多余的0的处理
-                                currentString=tempAns2.stripTrailingZeros().toPlainString();  //去除多余的0
-                                ans.setText(currentString);
-                                expression="";
-                            }
-                        }
-                        else {
-                            //输出结果溢出
-                            error=OUTPUT_OVERFLOW;
-                            overflowError.setText("OE");
-                        }
+//                        //计算结果后处理
+//                        double Up = 99999999.0;    //10进制上界
+//                        double Down = -9999999.0;    //10进制下界
+//                        if (tempAns1<=Up &&tempAns1>=Down){
+//                            //得到的结果在10进制表示范围内
+//                            if (tempAns1.toString().length()>9){    //对于无限小数
+//                                BigDecimal tempAns2=BigDecimal.valueOf(tempAns1);    //将浮点数转换成 大整数类型  方便对于多余的0的处理
+//                                currentString=tempAns2.stripTrailingZeros().toPlainString();  //去除多余的0
+//                                int point=currentString.indexOf(".");
+//                                int need_to_left=8-point-1;
+//
+//                            }
+//                            else {
+//                                BigDecimal tempAns2=BigDecimal.valueOf(tempAns1);    //将浮点数转换成 大整数类型  方便对于多余的0的处理
+//                                currentString=tempAns2.stripTrailingZeros().toPlainString();  //去除多余的0
+//                                ans.setText(currentString);
+//                                expression="";
+//                            }
+//                        }
+//                        else {
+//                            //输出结果溢出
+//                            error=OUTPUT_OVERFLOW;
+//                            overflowError.setText("OE");
+//                        }
                     }
                 }
             }
