@@ -67,6 +67,7 @@ public class T1_Programmer{
     private final int MISS_PARENTHESES=7;   //缺少括号
     private final int SC1_WHEN_DEC=8;      //在10进制的时候使用反码按钮
     private final int SC2_WHEN_DEC=9;      //在10进制的时候使用补码按钮
+    private final int PARENTHESES_ERROR=10;   //括号使用的语法错误（错误情况太多 不做区分）
 
     private String expression="";   //总表达式
     private String currentString="";   //当前需要展示在JLabel ans上字符串
@@ -84,6 +85,7 @@ public class T1_Programmer{
                 if (error==0){          //如果当前错误信号存在不允许输入
                     if (currentString.length()<8){           //没有溢出 正常进行
                         if (currentString.contains("(")||currentString.contains(")")){
+                            //由于括号也会显示  所有的操作数会作为括号的结束条件  将括号加入总表达式
                             expression+=currentString;
                             currentString="";
                         }
@@ -266,11 +268,11 @@ public class T1_Programmer{
                 //只有在开头连续输入0 才是不被允许的 这里不返回错误信号  指示不允许用户这么输入
                 if (error==0){
                     if (currentString.length()<8){
-                        if(currentString.length()==1){
-                            if (currentString.charAt(0) == '0'){
-                                return;
-                            }
+                        if(currentString.length()==1&&currentString.charAt(0) == '0'){
+                            //当前字符串长度是1 并且输入的操作数是0  就造成了重复输入0
+                            return;
                         }
+                        //其他逻辑和1-9一样
                         if (currentString.contains("(")||currentString.contains(")")){
                             expression+=currentString;
                             currentString="";
@@ -285,7 +287,7 @@ public class T1_Programmer{
                     }
                 }
             }
-        });   //0只能在开头出现一次
+        });
 
         /*a-f数字输入的事件处理，有输入溢出判定，还有语法错误判定*/
         aButton.addActionListener(new ActionListener() {
@@ -480,9 +482,15 @@ public class T1_Programmer{
         LeftButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //左括号可能会跟在 操作符或者左括号后面
                 if (error==0){
-                    if (currentString.contains("(")||currentString.contains(")")){
+                    if (currentString.contains("(")){   //左括号前面是左括号  就是嵌套括号的情况
+                        expression+=currentString;
                         currentString="";
+                    }
+                    if (currentString.contains(")")||isContainNum(currentString)){    //左括号前面是右括号或者是操作数  语法错误
+                        error=PARENTHESES_ERROR;
+                        grammarError.setText("GE");
                     }
                     String text="(";
                     currentString+=text;
@@ -495,21 +503,28 @@ public class T1_Programmer{
         RightButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //右括号前面只可能是 右括号或者是操作数
                 if (error==0){
-                    if (currentString.contains("(")||currentString.contains(")")){    //每次只会显示一个括号
+                    if (!notContainSymbolWithoutRight(currentString)){    //右括号前面是左括号或者是其他操作符  语法错误
+                        error=PARENTHESES_ERROR;
+                        grammarError.setText("GE");
+                    }
+                    if (!currentString.contains(")")){
+                        if (state==DEC){
+                            expression+=currentString;   //右括号和左括号不同 左括号可以理解为一个字符 右括号需要理解为一个操作符
+                            currentString="";   //输入有操作符 代表前一个操作数的结束  需要把操作数置入总表达式
+                        }
+                        else if (state==HEX){
+                            String temp=new Translation(currentString).Decimal();
+                            expression+=temp;
+                            currentString="";
+                            ans.setText(currentString);
+                        }
+                    }
+                    else {   //前面的操作数是右括号  嵌套括号
+                        expression+=currentString;
                         currentString="";
                     }
-                    if (state==DEC){
-                        expression+=currentString;   //右括号和左括号不同 左括号可以理解为一个字符 右括号需要理解为一个操作符
-                        currentString="";   //输入有操作符 代表前一个操作数的结束  需要把操作数置入总表达式
-                    }
-                    else if (state==HEX){
-                        String temp=new Translation(currentString).Decimal();
-                        expression+=temp;
-                        currentString="";
-                        ans.setText(currentString);
-                    }
-
                     String text=")";
                     currentString+=text;
                     ans.setText(currentString);
@@ -716,14 +731,57 @@ public class T1_Programmer{
                             expression+=currentString;
                         }
 
-                        currentString=Calculator.compute(expression);    //计算结果返回一个字符串
-                        currentString=new Translation(currentString).Hexadecimal();
-
+                        currentString=Calculator.compute(expression);    //计算结果返回一个字符串  10进制
                         //16进制后处理
-
+                        BigDecimal Up = BigDecimal.valueOf(2147483647);    //16进制上界
+                        BigDecimal Down = BigDecimal.valueOf(-2147483648);    //16进制下界
+                        BigDecimal tempAns1 =BigDecimal.valueOf(Double.parseDouble(currentString));
+                        if (tempAns1.compareTo(Up) < 0 && tempAns1.compareTo(Down) > 0){
+                            if(currentString.contains(".")){
+                                //计算结果有小数  只有16进制除法会遇到这种情况  自动转换成10进制模式
+                                state=DEC;
+                                DECState.setText("DEC");
+                                HEXState.setText("         ");
+                                if (currentString.length()>9){    //对于无限小数
+                                    int point=currentString.indexOf(".");
+                                    int need_to_left=8-point-1;
+                                    tempAns1=BigDecimal.valueOf(Double.parseDouble(currentString.substring(0,8)));
+                                    if (Integer.parseInt(currentString.substring(7,8)) >=5){   //根据返回字符串的第九位判断是否需要四舍五入
+                                        String plus="0.";
+                                        for(int i=0;i<need_to_left-1;i++){
+                                            plus+="0";
+                                        }
+                                        plus+="1";
+                                        Double plusNum=Double.parseDouble(plus);
+                                        tempAns1=tempAns1.add(BigDecimal.valueOf(plusNum));
+                                        ans.setText(tempAns1.stripTrailingZeros().toPlainString());
+                                        expression="";
+                                    }
+                                    else {
+                                        ans.setText(tempAns1.stripTrailingZeros().toPlainString());
+                                        expression="";
+                                    }
+                                }
+                                else {
+                                    ans.setText(tempAns1.stripTrailingZeros().toPlainString());
+                                    expression="";
+                                }
+                            }
+                            else {
+                                currentString=new Translation(currentString).Hexadecimal();
+                                ans.setText(currentString);
+                                expression="";
+                            }
+                        }
+                        else {
+                            //输出结果溢出
+                            error=OUTPUT_OVERFLOW;
+                            overflowError.setText("OE");
+                        }
                     }
                     else{//10进制走这条分支
                         expression+=currentString;
+                        System.out.println(expression);
                         currentString=Calculator.compute(expression);    //计算结果返回一个浮点数
 
                         //10进制计算结果后处理
@@ -1029,6 +1087,26 @@ public class T1_Programmer{
                 !currentString.contains("^") &&
                 !currentString.contains("<<") &&
                 !currentString.contains(">>");
+    }
+
+    public boolean isContainNum(String currentString){
+        return  currentString.contains("1")||
+                currentString.contains("2")||
+                currentString.contains("3")||
+                currentString.contains("4")||
+                currentString.contains("5")||
+                currentString.contains("6")||
+                currentString.contains("7")||
+                currentString.contains("8")||
+                currentString.contains("9")||
+                currentString.contains("0")||
+                currentString.contains("A")||
+                currentString.contains("B")||
+                currentString.contains("C")||
+                currentString.contains("D")||
+                currentString.contains("E")||
+                currentString.contains("F");
+
     }
 
 
