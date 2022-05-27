@@ -37,42 +37,44 @@ public class Translation {
         }
     }
     public String Hexadecimal() {
-        if(Integer.parseInt(s)>=0&&Integer.parseInt(s)<=16){
-            int num=Integer.parseInt(s);
-            String str1=Integer.toHexString(num);
+        if (Integer.parseInt(s) >= 0 && Integer.parseInt(s) <= 16) {
+            int num = Integer.parseInt(s);
+            String str1 = Integer.toHexString(num);
             return str1.toUpperCase();
 
-        }
-        else
-            {
-                char array[] = s.toCharArray();
-                BigInteger bi = new BigInteger(s);
-                byte[] byteInteger = bi.toByteArray();//调用BigInteger方法获取十进制对应二进制数组
-                String ss = BintoHex.bin2HexStr(byteInteger);
-                if (ss.length() < 8 && array[0] == '-') {
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < 8 - ss.length(); i++) {//补足十六进制F数量
-                        sb.append("F");
-                    }
-                    return sb + ss;
+        } else {
+            char array[] = s.toCharArray();
+            BigInteger bi = new BigInteger(s);
+            byte[] byteInteger = bi.toByteArray();//调用BigInteger方法获取十进制对应二进制数组
+            String ss = BintoHex.bin2HexStr(byteInteger);
+            if (ss.length() < 8 && array[0] == '-') {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < 8 - ss.length(); i++) {//补足十六进制F数量
+                    sb.append("F");
                 }
-                char array1[] = ss.toCharArray();
-                if (array1[0] == '0') {
-                    String strNew = ss.substring(1, ss.length());
-                    while (array1[0] == '0') {
-                        strNew = strNew.substring(1, strNew.length());
-                        array1 = strNew.toCharArray();//删除转换后字符串首字符'o'}
-                    }
-                    return strNew;
-                }
-                return ss;
+                return sb + ss;
             }
+            char array1[] = ss.toCharArray();
+            if (array1[0] == '0') {
+                String strNew = ss.substring(1, ss.length());
+                char array2[] = strNew.toCharArray();
+                while (array2[0] == '0') {
+                    strNew = strNew.substring(1, strNew.length());
+                    array2 = strNew.toCharArray();//删除转换后字符串首字符'o'}
+                }
+                return strNew;
+            }
+            return ss;
+        }
     }
+
     /*public static void main(String[] args) {
-        Translation tr=new Translation("14");    //调试主函数
+        Translation tr=new Translation("385");    //调试主函数
         String s= tr.Hexadecimal();
         System.out.println(s);
 
-    }*/
+    }
+
+     */
 
 }
