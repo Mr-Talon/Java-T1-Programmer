@@ -1,9 +1,9 @@
 import javax.swing.*;
-import javax.swing.plaf.metal.MetalButtonUI;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class T1_Programmer{
     //窗体
@@ -62,13 +62,23 @@ public class T1_Programmer{
     private int error=0;
 
     private final int HEX_INPUT_WHEN_DEX =3;   //在10进制情况下 输入a-f
-    private final int INPUT_DOT_WHEN_HEX =4;   //在16进制输入小数点
-    private final int INPUT_OVERFLOW=5;     //输入溢出
-    private final int OUTPUT_OVERFLOW=6;    //输出溢出
-    private final int MISS_PARENTHESES=7;   //缺少括号
     private final int SC1_WHEN_DEC=8;      //在10进制的时候使用反码按钮
     private final int SC2_WHEN_DEC=9;      //在10进制的时候使用补码按钮
+    private final int AND_WHEN_DEC=12;      //在10进制的时候使用与运算按钮
+    private final int OR_WHEN_DEC=13;      //在10进制的时候使用或运算按钮
+    private final int XOR_WHEN_DEC=14;      //在10进制的时候使用异或运算按钮
+    private final int SHE_WHEN_DEC=15;      //在10进制的时候使用移位按钮
+
+
+    private final int INPUT_DOT_WHEN_HEX =4;   //在16进制输入小数点
+    private final int NEGATIVE_WHEN_HEX=11;   //在16进制状态下使用减号充当符号 （16进制的负数应该是通过编码的第一位表示正负）
+
+    private final int INPUT_OVERFLOW=5;     //输入溢出
+    private final int OUTPUT_OVERFLOW=6;    //输出溢出
+
+    private final int MISS_PARENTHESES=7;   //缺少括号
     private final int PARENTHESES_ERROR=10;   //括号使用的语法错误（错误情况太多 不做区分）
+
 
     private String expression="";   //总表达式
     private String currentString="";   //当前需要展示在JLabel ans上字符串
@@ -483,7 +493,7 @@ public class T1_Programmer{
         LeftButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //左括号可能会跟在 操作符或者左括号后面
+                //左括号可能会跟在 操作符或者左括号后面  或者是负号后面
                 if (error==0){
                     if (currentString.contains("(")){   //左括号前面是左括号  就是嵌套括号的情况
                         expression+=currentString;
@@ -492,6 +502,10 @@ public class T1_Programmer{
                     if (currentString.contains(")")||isContainNum(currentString)){    //左括号前面是右括号或者是操作数  语法错误
                         error=PARENTHESES_ERROR;
                         grammarError.setText("GE");
+                    }
+                    if (currentString.contains("-")){
+                        expression+=currentString;
+                        currentString="";
                     }
                     String text="(";
                     currentString+=text;
@@ -681,8 +695,9 @@ public class T1_Programmer{
                         }
                     }
                     //防止过多的符号输入  在总表达式中 操作符不可以连续出现
-                    String lastChar=expression.substring(expression.length()-1);  //获取最后一个元素
-                    if (notContainSymbol(lastChar)){
+                    String lastCharE=expression.substring(expression.length()-1);
+                    String lastCharC=currentString.substring(currentString.length()-1);
+                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
                         expression+="+";
                     }
                 }
@@ -692,66 +707,87 @@ public class T1_Programmer{
         MinusButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //减号前面只可能是左括号和右括号或者是数字  10进制情况下可以用减号表示负数
                 if (error==0){
-                    if (expression.length()==0&&currentString.length()==0){   //表达式的最前面不应该是乘号
-                        return;
+                    if (state==DEC){
+                        if (expression.length()==0||currentString.contains("(")){
+                            //减号用作负号 要么是表达式的第一项 要么就是左括号之后
+                            expression+=currentString;
+                            String text="-";
+                            currentString=text;
+                            ans.setText(currentString);
+                        }
+                        else {
+                            expression+=currentString;
+                            currentString="";
+                            ans.setText(currentString);
+                        }
+
                     }
-                    if (state==DEC){      //十进制直接将当前字符串写入总表达式
-                        expression+=currentString;
-                        currentString="";
-                        ans.setText(currentString);
-                    }
-                    else if (state==HEX){    //十六进制将当前字符串先转换成10进制 算法只处理十进制
-                        if (!currentString.contains(")")){     //乘号前面可能是右括号 或者是操作数   此分支处理乘号的情况
+                    else {
+                        //16进制情况下 不允许输入减号作为负号
+                        if (expression.length()==0||currentString.contains("(")){
+                            error=NEGATIVE_WHEN_HEX;
+                            grammarError.setText("GE");
+                            return;
+                        }
+                        if (!currentString.contains(")")){
                             currentString=new Translation(currentString).Decimal();
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
-                        else{      //此分支 乘号的前面是括号 不需要转换成10进制 直接加入总表达式
+                        else{
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
                     }
-                    //防止过多的符号输入
-                    String lastChar=expression.substring(expression.length()-1);
-                    if (notContainSymbol(lastChar)){
-                        expression+="-";
+                    if (!Objects.equals(expression, "")){   //由于减号可以作为负号出现在总表达式的第一个字符 所以增加了这个判断
+                        String lastCharE=expression.substring(expression.length()-1);
+                        String lastCharC=currentString.substring(currentString.length()-1);
+                        if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
+                            expression+="-";
+                        }
                     }
                 }
             }
         });
-
         /*功能按键 乘法按钮*/
         MultipButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //乘号和加号一模一样
                 if (error==0){
-                    if (expression.length()==0&&currentString.length()==0){   //表达式的最前面不应该是乘号
+                    if (expression.length()==0&&currentString.length()==0){
                         return;
                     }
-                    if (state==DEC){      //十进制直接将当前字符串写入总表达式
+                    if (currentString.contains("(")){
+                        error=PARENTHESES_ERROR;
+                        grammarError.setText("GE");
+                        return;
+                    }
+                    if (state==DEC){
                         expression+=currentString;
                         currentString="";
                         ans.setText(currentString);
                     }
-                    else if (state==HEX){    //十六进制将当前字符串先转换成10进制 算法只处理十进制
-                        if (!currentString.contains(")")){     //乘号前面可能是右括号 或者是操作数   此分支处理乘号的情况
+                    else if (state==HEX){
+                        if (!currentString.contains(")")){
                             currentString=new Translation(currentString).Decimal();
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
-                        else{      //此分支 乘号的前面是括号 不需要转换成10进制 直接加入总表达式
+                        else{
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
                     }
-                    //防止过多的符号输入
-                    String lastChar=expression.substring(expression.length()-1);
-                    if (notContainSymbol(lastChar)){
+                    String lastCharE=expression.substring(expression.length()-1);
+                    String lastCharC=currentString.substring(currentString.length()-1);
+                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
                         expression+="*";
                     }
                 }
@@ -762,30 +798,35 @@ public class T1_Programmer{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
-                    if (expression.length()==0&&currentString.length()==0){   //表达式的最前面不应该是乘号
+                    if (expression.length()==0&&currentString.length()==0){
                         return;
                     }
-                    if (state==DEC){      //十进制直接将当前字符串写入总表达式
+                    if (currentString.contains("(")){
+                        error=PARENTHESES_ERROR;
+                        grammarError.setText("GE");
+                        return;
+                    }
+                    if (state==DEC){
                         expression+=currentString;
                         currentString="";
                         ans.setText(currentString);
                     }
-                    else if (state==HEX){    //十六进制将当前字符串先转换成10进制 算法只处理十进制
-                        if (!currentString.contains(")")){     //乘号前面可能是右括号 或者是操作数   此分支处理乘号的情况
+                    else if (state==HEX){
+                        if (!currentString.contains(")")){
                             currentString=new Translation(currentString).Decimal();
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
-                        else{      //此分支 乘号的前面是括号 不需要转换成10进制 直接加入总表达式
+                        else{
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
                     }
-                    //防止过多的符号输入
-                    String lastChar=expression.substring(expression.length()-1);
-                    if (notContainSymbol(lastChar)){
+                    String lastCharE=expression.substring(expression.length()-1);
+                    String lastCharC=currentString.substring(currentString.length()-1);
+                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
                         expression+="/";
                     }
                 }
@@ -795,31 +836,36 @@ public class T1_Programmer{
         ORButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //或运算和加号一模一样  只是在10进制情况下使用是语法错误
                 if (error==0){
-                    if (expression.length()==0&&currentString.length()==0){   //表达式的最前面不应该是乘号
+                    if (expression.length()==0&&currentString.length()==0){
                         return;
                     }
-                    if (state==DEC){      //十进制直接将当前字符串写入总表达式
-                        expression+=currentString;
-                        currentString="";
-                        ans.setText(currentString);
+                    if (currentString.contains("(")){
+                        error=PARENTHESES_ERROR;
+                        grammarError.setText("GE");
+                        return;
                     }
-                    else if (state==HEX){    //十六进制将当前字符串先转换成10进制 算法只处理十进制
-                        if (!currentString.contains(")")){     //乘号前面可能是右括号 或者是操作数   此分支处理乘号的情况
+                    if (state==DEC){
+                        error=OR_WHEN_DEC;
+                        grammarError.setText("GE");
+                    }
+                    else if (state==HEX){
+                        if (!currentString.contains(")")){
                             currentString=new Translation(currentString).Decimal();
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
-                        else{      //此分支 乘号的前面是括号 不需要转换成10进制 直接加入总表达式
+                        else{
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
                     }
-                    //防止过多的符号输入
-                    String lastChar=expression.substring(expression.length()-1);
-                    if (notContainSymbol(lastChar)){
+                    String lastCharE=expression.substring(expression.length()-1);
+                    String lastCharC=currentString.substring(currentString.length()-1);
+                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
                         expression+="|";
                     }
                 }
@@ -829,31 +875,36 @@ public class T1_Programmer{
         ANDButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //与运算和加号一模一样
                 if (error==0){
-                    if (expression.length()==0&&currentString.length()==0){   //表达式的最前面不应该是乘号
+                    if (expression.length()==0&&currentString.length()==0){
                         return;
                     }
-                    if (state==DEC){      //十进制直接将当前字符串写入总表达式
-                        expression+=currentString;
-                        currentString="";
-                        ans.setText(currentString);
+                    if (currentString.contains("(")){
+                        error=PARENTHESES_ERROR;
+                        grammarError.setText("GE");
+                        return;
                     }
-                    else if (state==HEX){    //十六进制将当前字符串先转换成10进制 算法只处理十进制
-                        if (!currentString.contains(")")){     //乘号前面可能是右括号 或者是操作数   此分支处理乘号的情况
+                    if (state==DEC){
+                        error=AND_WHEN_DEC;
+                        grammarError.setText("GE");
+                    }
+                    else if (state==HEX){
+                        if (!currentString.contains(")")){
                             currentString=new Translation(currentString).Decimal();
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
-                        else{      //此分支 乘号的前面是括号 不需要转换成10进制 直接加入总表达式
+                        else{
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
                     }
-                    //防止过多的符号输入
-                    String lastChar=expression.substring(expression.length()-1);
-                    if (notContainSymbol(lastChar)){
+                    String lastCharE=expression.substring(expression.length()-1);
+                    String lastCharC=currentString.substring(currentString.length()-1);
+                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
                         expression+="&";
                     }
                 }
@@ -864,31 +915,63 @@ public class T1_Programmer{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
-                    if (expression.length()==0&&currentString.length()==0){   //表达式的最前面不应该是乘号
+                    if (expression.length()==0&&currentString.length()==0){
                         return;
                     }
-                    if (state==DEC){      //十进制直接将当前字符串写入总表达式
-                        expression+=currentString;
-                        currentString="";
-                        ans.setText(currentString);
+                    if (state==DEC){
+                        error=XOR_WHEN_DEC;
+                        grammarError.setText("GE");
                     }
-                    else if (state==HEX){    //十六进制将当前字符串先转换成10进制 算法只处理十进制
-                        if (!currentString.contains(")")){     //乘号前面可能是右括号 或者是操作数   此分支处理乘号的情况
+                    else if (state==HEX){
+                        if (!currentString.contains(")")){
                             currentString=new Translation(currentString).Decimal();
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
-                        else{      //此分支 乘号的前面是括号 不需要转换成10进制 直接加入总表达式
+                        else{
                             expression+=currentString;
                             currentString="";
                             ans.setText(currentString);
                         }
                     }
-                    //防止过多的符号输入
-                    String lastChar=expression.substring(expression.length()-1);
-                    if (notContainSymbol(lastChar)){
+                    String lastCharE=expression.substring(expression.length()-1);
+                    String lastCharC=currentString.substring(currentString.length()-1);
+                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
                         expression+="^";
+                    }
+                }
+            }
+        });
+        /*功能按键 移位按钮*/
+        SHEButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (error==0){
+                    if (expression.length()==0&&currentString.length()==0){
+                        return;
+                    }
+                    if (state==DEC){
+                        error=SHE_WHEN_DEC;
+                        grammarError.setText("GE");
+                    }
+                    else if (state==HEX){
+                        if (!currentString.contains(")")){
+                            currentString=new Translation(currentString).Decimal();
+                            expression+=currentString;
+                            currentString="";
+                            ans.setText(currentString);
+                        }
+                        else{
+                            expression+=currentString;
+                            currentString="";
+                            ans.setText(currentString);
+                        }
+                    }
+                    String lastCharE=expression.substring(expression.length()-1);
+                    String lastCharC=currentString.substring(currentString.length()-1);
+                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
+                        expression+="<";
                     }
                 }
             }
@@ -905,6 +988,10 @@ public class T1_Programmer{
                     else if (state==HEX){
                         currentString=new Code_Trans().F_trans(currentString);
                         ans.setText(currentString);
+                        if (currentString.substring(0,1)=="-"){
+                            //如果转换过来是负号  就要自动加一个括号
+                            currentString="("+currentString+")";
+                        }
                     }
                 }
             }
@@ -921,40 +1008,10 @@ public class T1_Programmer{
                     else if (state==HEX){
                         currentString=new Code_Trans().B_trans(currentString);
                         ans.setText(currentString);
-                    }
-                }
-            }
-        });
-        /*功能按键 移位按钮*/
-        SHEButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (error==0){
-                    if (expression.length()==0&&currentString.length()==0){   //表达式的最前面不应该是乘号
-                        return;
-                    }
-                    if (state==DEC){      //十进制直接将当前字符串写入总表达式
-                        expression+=currentString;
-                        currentString="";
-                        ans.setText(currentString);
-                    }
-                    else if (state==HEX){    //十六进制将当前字符串先转换成10进制 算法只处理十进制
-                        if (!currentString.contains(")")){     //乘号前面可能是右括号 或者是操作数   此分支处理乘号的情况
-                            currentString=new Translation(currentString).Decimal();
-                            expression+=currentString;
-                            currentString="";
-                            ans.setText(currentString);
+                        if (currentString.substring(0,1)=="-"){
+                            //如果转换过来是负号  就要自动加一个括号
+                            currentString="("+currentString+")";
                         }
-                        else{      //此分支 乘号的前面是括号 不需要转换成10进制 直接加入总表达式
-                            expression+=currentString;
-                            currentString="";
-                            ans.setText(currentString);
-                        }
-                    }
-                    //防止过多的符号输入
-                    String lastChar=expression.substring(expression.length()-1);
-                    if (notContainSymbol(lastChar)){
-                        expression+="<";
                     }
                 }
             }
@@ -1076,12 +1133,12 @@ public class T1_Programmer{
         });
     }
 
+    /*一些辅助函数 让事件处理的代码简洁一点*/
     public boolean notContainPARENTHESES(String currentString){
         return  !currentString.contains("(") &&
                 !currentString.contains(")") ;
 
     }
-
     public boolean notContainABCDEF(String currentString){
         return  !currentString.contains("A") &&
                 !currentString.contains("B") &&
@@ -1090,7 +1147,6 @@ public class T1_Programmer{
                 !currentString.contains("E") &&
                 !currentString.contains("F") ;
     }
-
     public boolean notContainSymbol(String currentString){
         return  !currentString.contains("+") &&
                 !currentString.contains("-") &&
@@ -1099,10 +1155,8 @@ public class T1_Programmer{
                 !currentString.contains("&") &&
                 !currentString.contains("|") &&
                 !currentString.contains("^") &&
-                !currentString.contains("<<") &&
-                !currentString.contains(">>");
+                !currentString.contains("<");
     }
-
     public boolean isContainNum(String currentString){
         return  currentString.contains("1")||
                 currentString.contains("2")||
