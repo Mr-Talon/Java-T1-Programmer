@@ -69,7 +69,6 @@ public class T1_Programmer{
     private final int XOR_WHEN_DEC=14;      //在10进制的时候使用异或运算按钮
     private final int SHE_WHEN_DEC=15;      //在10进制的时候使用移位按钮
 
-
     private final int INPUT_DOT_WHEN_HEX =4;   //在16进制输入小数点
     private final int NEGATIVE_WHEN_HEX=11;   //在16进制状态下使用减号充当符号 （16进制的负数应该是通过编码的第一位表示正负）
 
@@ -79,6 +78,9 @@ public class T1_Programmer{
     private final int MISS_PARENTHESES=7;   //缺少括号
     private final int PARENTHESES_ERROR=10;   //括号使用的语法错误（错误情况太多 不做区分）
 
+    private final int EQUAL_ERROR=16;   //等号触发的多种错误 （不做区分）
+
+    private final int DIVIDE_ZERO=17;  //除以0
 
     private String expression="";   //总表达式
     private String currentString="";   //当前需要展示在JLabel ans上字符串
@@ -468,6 +470,9 @@ public class T1_Programmer{
                         grammarError.setText("GE");
                     }
                     else {    //十进制模式
+                        if (currentString==""){
+                            return;
+                        }
                         if (currentString.length()<8){
                             if (currentString.contains(".")){   //如果字符串中已经有了小数点就不可以再次加入
                                 return;
@@ -519,7 +524,7 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 //右括号前面只可能是 右括号或者是操作数
                 if (error==0){
-                    if (!notContainSymbol(currentString)||currentString.contains("(")){    //右括号前面是左括号或者是其他操作符  语法错误
+                    if (!notContainSymbol(currentString.substring(1))||currentString.contains("(")){    //右括号前面是左括号或者是其他操作符  语法错误
                         error=PARENTHESES_ERROR;
                         grammarError.setText("GE");
                     }
@@ -696,8 +701,7 @@ public class T1_Programmer{
                     }
                     //防止过多的符号输入  在总表达式中 操作符不可以连续出现
                     String lastCharE=expression.substring(expression.length()-1);
-                    String lastCharC=currentString.substring(currentString.length()-1);
-                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
+                    if (notContainSymbol(lastCharE)){
                         expression+="+";
                     }
                 }
@@ -710,11 +714,15 @@ public class T1_Programmer{
                 //减号前面只可能是左括号和右括号或者是数字  10进制情况下可以用减号表示负数
                 if (error==0){
                     if (state==DEC){
-                        if (expression.length()==0||currentString.contains("(")){
+                        if (expression.length()==0&&currentString==""){
                             //减号用作负号 要么是表达式的第一项 要么就是左括号之后
-                            expression+=currentString;
                             String text="-";
                             currentString=text;
+                            ans.setText(currentString);
+                        }
+                        else if (currentString.contains("(")){
+                            expression+=currentString;
+                            currentString="-";
                             ans.setText(currentString);
                         }
                         else {
@@ -726,7 +734,7 @@ public class T1_Programmer{
                     }
                     else {
                         //16进制情况下 不允许输入减号作为负号
-                        if (expression.length()==0||currentString.contains("(")){
+                        if ((expression.length()==0&&currentString=="")||currentString.contains("(")){
                             error=NEGATIVE_WHEN_HEX;
                             grammarError.setText("GE");
                             return;
@@ -745,8 +753,7 @@ public class T1_Programmer{
                     }
                     if (!Objects.equals(expression, "")){   //由于减号可以作为负号出现在总表达式的第一个字符 所以增加了这个判断
                         String lastCharE=expression.substring(expression.length()-1);
-                        String lastCharC=currentString.substring(currentString.length()-1);
-                        if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
+                        if (notContainSymbol(lastCharE)&&!currentString.contains("-")){
                             expression+="-";
                         }
                     }
@@ -786,8 +793,7 @@ public class T1_Programmer{
                         }
                     }
                     String lastCharE=expression.substring(expression.length()-1);
-                    String lastCharC=currentString.substring(currentString.length()-1);
-                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
+                    if (notContainSymbol(lastCharE)){
                         expression+="*";
                     }
                 }
@@ -825,8 +831,7 @@ public class T1_Programmer{
                         }
                     }
                     String lastCharE=expression.substring(expression.length()-1);
-                    String lastCharC=currentString.substring(currentString.length()-1);
-                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
+                    if (notContainSymbol(lastCharE)){
                         expression+="/";
                     }
                 }
@@ -864,8 +869,7 @@ public class T1_Programmer{
                         }
                     }
                     String lastCharE=expression.substring(expression.length()-1);
-                    String lastCharC=currentString.substring(currentString.length()-1);
-                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
+                    if (notContainSymbol(lastCharE)){
                         expression+="|";
                     }
                 }
@@ -903,8 +907,7 @@ public class T1_Programmer{
                         }
                     }
                     String lastCharE=expression.substring(expression.length()-1);
-                    String lastCharC=currentString.substring(currentString.length()-1);
-                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
+                    if (notContainSymbol(lastCharE)){
                         expression+="&";
                     }
                 }
@@ -936,8 +939,7 @@ public class T1_Programmer{
                         }
                     }
                     String lastCharE=expression.substring(expression.length()-1);
-                    String lastCharC=currentString.substring(currentString.length()-1);
-                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
+                    if (notContainSymbol(lastCharE)){
                         expression+="^";
                     }
                 }
@@ -969,8 +971,7 @@ public class T1_Programmer{
                         }
                     }
                     String lastCharE=expression.substring(expression.length()-1);
-                    String lastCharC=currentString.substring(currentString.length()-1);
-                    if (notContainSymbol(lastCharE)&&notContainSymbol(lastCharC)){
+                    if (notContainSymbol(lastCharE)){
                         expression+="<";
                     }
                 }
@@ -1021,9 +1022,20 @@ public class T1_Programmer{
         EqualButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //等号前面可以是 右括号 操作数   不能是左括号 操作符
                 if(error==0){
                     if (numOfRightParentheses!=numOfLeftParentheses){  //处理少括号的语法错误
                         error=MISS_PARENTHESES;
+                        grammarError.setText("GE");
+                        return;
+                    }
+                    if (currentString.contains("(")){    //括号前面是左括号运算没有结束 错误
+                        error=PARENTHESES_ERROR;
+                        grammarError.setText("GE");
+                        return;
+                    }
+                    if (!notContainSymbol(expression.substring(expression.length()-1))&&currentString==""){  //等号前面不可以是操作符
+                        error=EQUAL_ERROR;
                         grammarError.setText("GE");
                         return;
                     }
@@ -1037,8 +1049,18 @@ public class T1_Programmer{
                         else{      //此分支 前面是括号 不需要转换成10进制 直接加入总表达式
                             expression+=currentString;
                         }
-                        System.out.println(expression);
-                        currentString=Calculator.compute(expression);    //计算结果返回一个字符串  10进制
+
+                        System.out.println("cal前："+expression);
+                        try{
+                            currentString=Calculator.compute(expression);    //计算结果返回一个字符串  10进制
+                        }
+                        catch (ArithmeticException exception){   //算法会抛出除以0的异常对象
+                            error=DIVIDE_ZERO;
+                            grammarError.setText("GE");
+                            return;
+                        }
+                        System.out.println("cal后："+currentString);
+
                         //16进制后处理
                         BigDecimal Up = BigDecimal.valueOf(2147483647);    //16进制上界
                         BigDecimal Down = BigDecimal.valueOf(-2147483648);    //16进制下界
@@ -1088,8 +1110,17 @@ public class T1_Programmer{
                     }
                     else{//10进制走这条分支
                         expression+=currentString;
-                        System.out.println(expression);
-                        currentString=Calculator.compute(expression);    //计算结果返回一个浮点数
+
+                        System.out.println("cal前："+expression);
+                        try{
+                            currentString=Calculator.compute(expression);    //计算结果返回一个浮点数
+                        }
+                        catch (ArithmeticException exception){
+                            error=DIVIDE_ZERO;
+                            grammarError.setText("GE");
+                            return;
+                        }
+                        System.out.println("cal后："+currentString);
 
                         //10进制计算结果后处理
                         BigDecimal Up = BigDecimal.valueOf(99999999);    //10进制上界
@@ -1174,7 +1205,6 @@ public class T1_Programmer{
                 currentString.contains("D")||
                 currentString.contains("E")||
                 currentString.contains("F");
-
     }
 
 
