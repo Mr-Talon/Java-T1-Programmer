@@ -132,7 +132,7 @@ public class Calculator {
         }
         while (num.size() > 1) //使最后只剩一个数
             eval();
-        return num.peek().stripTrailingZeros().toString(); //去末尾0且变为String
+        return num.peek().stripTrailingZeros().toPlainString(); //去末尾0且变为String
     }
 }
 
