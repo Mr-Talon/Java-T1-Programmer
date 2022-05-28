@@ -1,12 +1,12 @@
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+
 /*
 16进制,10进制的反码，补码转换
 * */
 public class Code_Trans {
     String F_trans(String s) {//反码
-        String str_bin;//二进制字符串
-        long n;//10进制数字
-            n = Integer.parseInt(s, 16);//16进制转10进制
-            str_bin=Long.toBinaryString(n);
+        String str_bin=BintoHex.hexStr2BinStr(s);
         StringBuilder str_bin_0=new StringBuilder(str_bin);
         while(str_bin_0.length()%4!=0)
         {
@@ -26,10 +26,8 @@ public class Code_Trans {
             }
             //二进制反码转十六进制
             String binaryStr = new String(str);//更新后的字符数组再转回字符串
-            n= Integer.parseInt(binaryStr, 2);//2进制转回10进制
-            String sbs;
-            sbs=Long.toHexString(n);
-            return sbs.toUpperCase();
+            Translation tr=new Translation(binaryStr);
+            return tr.Hexadecimal();
         }
          else {//正数,反码是本身
             return s;}
@@ -37,10 +35,7 @@ public class Code_Trans {
 
     String B_trans(String s) {
         //补码为反码+1
-        String str_bin;//二进制字符串
-        long n;//10进制数字
-        n = Integer.parseInt(s, 16);//16进制转10进制
-        str_bin=Long.toBinaryString(n);
+        String str_bin=BintoHex.hexStr2BinStr(s);
         StringBuilder str_bin_0=new StringBuilder(str_bin);
         while(str_bin_0.length()%4!=0)
         {
@@ -79,13 +74,13 @@ public class Code_Trans {
             if (flag == 0)//整体没有进位，用原始字符数组
             {
                 String binaryStr = new String(str);//更新后的字符数组再转回字符串
-                n= Integer.parseInt(binaryStr, 2);//2进制转回10进制
-                String sbs;
-                sbs=Long.toHexString(n);
-                return sbs.toUpperCase();
+                Translation tr=new Translation(binaryStr);
+                return tr.Hexadecimal();
             } else {//整体有进位，唯一的：+0
                 return "0";}
         } else {//正数，补码是本身
             return s;}
     }
 }
+
+
