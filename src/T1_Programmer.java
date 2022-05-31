@@ -97,7 +97,10 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){          //如果当前错误信号存在不允许输入
                     if (currentString.length()<8){           //没有溢出 正常进行
-                        if (currentString.contains("(")||currentString.contains(")")){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (currentString.contains("(")){
                             //由于括号也会显示  所有的操作数会作为括号的结束条件  将括号加入总表达式
                             expression+=currentString;
                             currentString="";
@@ -118,7 +121,10 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
-                        if (currentString.contains("(")||currentString.contains(")")){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (currentString.contains("(")){
                             expression+=currentString;
                             currentString="";
                         }
@@ -138,7 +144,10 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
-                        if (currentString.contains("(")||currentString.contains(")")){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (currentString.contains("(")){
                             expression+=currentString;
                             currentString="";
                         }
@@ -158,7 +167,10 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
-                        if (currentString.contains("(")||currentString.contains(")")){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (currentString.contains("(")){
                             expression+=currentString;
                             currentString="";
                         }
@@ -178,7 +190,10 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
-                        if (currentString.contains("(")||currentString.contains(")")){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (currentString.contains("(")){
                             expression+=currentString;
                             currentString="";
                         }
@@ -198,7 +213,10 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
-                        if (currentString.contains("(")||currentString.contains(")")){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (currentString.contains("(")){
                             expression+=currentString;
                             currentString="";
                         }
@@ -218,7 +236,10 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
-                        if (currentString.contains("(")||currentString.contains(")")){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (currentString.contains("(")){
                             expression+=currentString;
                             currentString="";
                         }
@@ -238,7 +259,10 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
-                        if (currentString.contains("(")||currentString.contains(")")){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (currentString.contains("(")){
                             expression+=currentString;
                             currentString="";
                         }
@@ -258,7 +282,10 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
-                        if (currentString.contains("(")||currentString.contains(")")){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (currentString.contains("(")){
                             expression+=currentString;
                             currentString="";
                         }
@@ -286,7 +313,10 @@ public class T1_Programmer{
                             return;
                         }
                         //其他逻辑和1-9一样
-                        if (currentString.contains("(")||currentString.contains(")")){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (currentString.contains("(")){
                             expression+=currentString;
                             currentString="";
                         }
@@ -308,12 +338,15 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if(currentString.contains(")")){
+                            return;
+                        }
                         if (state==DEC){       //对于a-f的字符 只能在16进制输入状态下输入
                             error=HEX_INPUT_WHEN_DEX;
                             grammarError.setText("GE");
                         }
                         else {      //正确输入情况
-                            if (currentString.contains("(")||currentString.contains(")")){
+                            if (currentString.contains("(")){
                                 expression+=currentString;
                                 currentString="";
                             }
@@ -334,12 +367,15 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if(currentString.contains(")")){
+                            return;
+                        }
                         if (state==DEC){
                             error=HEX_INPUT_WHEN_DEX;
                             grammarError.setText("GE");
                         }
                         else {
-                            if (currentString.contains("(")||currentString.contains(")")){
+                            if (currentString.contains("(")){
                                 expression+=currentString;
                                 currentString="";
                             }
@@ -360,12 +396,15 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if(currentString.contains(")")){
+                            return;
+                        }
                         if (state==DEC){
                             error=HEX_INPUT_WHEN_DEX;
                             grammarError.setText("GE");
                         }
                         else {
-                            if (currentString.contains("(")||currentString.contains(")")){
+                            if (currentString.contains("(")){
                                 expression+=currentString;
                                 currentString="";
                             }
@@ -386,12 +425,15 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
                     if (currentString.length()<8){
+                        if(currentString.contains(")")){
+                            return;
+                        }
                         if (state==DEC){
                             error=HEX_INPUT_WHEN_DEX;
                             grammarError.setText("GE");
                         }
                         else {
-                            if (currentString.contains("(")||currentString.contains(")")){
+                            if (currentString.contains("(")){
                                 expression+=currentString;
                                 currentString="";
                             }
@@ -411,13 +453,16 @@ public class T1_Programmer{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
+                    if(currentString.contains(")")){
+                        return;
+                    }
                     if (currentString.length()<8){
                         if (state==DEC){
                             error=HEX_INPUT_WHEN_DEX;
                             grammarError.setText("GE");
                         }
                         else {
-                            if (currentString.contains("(")||currentString.contains(")")){
+                            if (currentString.contains("(")){
                                 expression+=currentString;
                                 currentString="";
                             }
@@ -437,13 +482,16 @@ public class T1_Programmer{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (error==0){
+                    if(currentString.contains(")")){
+                        return;
+                    }
                     if (currentString.length()<8){
                         if (state==DEC){
                             error=HEX_INPUT_WHEN_DEX;
                             grammarError.setText("GE");
                         }
                         else {
-                            if (currentString.contains("(")||currentString.contains(")")){
+                            if (currentString.contains("(")){
                                 expression+=currentString;
                                 currentString="";
                             }
@@ -473,11 +521,14 @@ public class T1_Programmer{
                         if (currentString==""){
                             return;
                         }
+                        if(currentString.contains(")")){
+                            return;
+                        }
                         if (currentString.length()<8){
                             if (currentString.contains(".")){   //如果字符串中已经有了小数点就不可以再次加入
                                 return;
                             }
-                            if (currentString.contains("(")||currentString.contains(")")){
+                            if (currentString.contains("(")){
                                 expression+=currentString;
                                 currentString="";
                             }
@@ -567,6 +618,10 @@ public class T1_Programmer{
                         }
                         else {
                             ans.setText(currentString);
+                            if (currentString.substring(0,1)=="-"){
+                                //如果转换过来是负号  就要自动加一个括号
+                                currentString="("+currentString+")";
+                            }
                         }
                     }
                     //状态变化是一直需要执行的
@@ -989,10 +1044,6 @@ public class T1_Programmer{
                     else if (state==HEX){
                         currentString=new Code_Trans().F_trans(currentString);
                         ans.setText(currentString);
-                        if (currentString.substring(0,1)=="-"){
-                            //如果转换过来是负号  就要自动加一个括号
-                            currentString="("+currentString+")";
-                        }
                     }
                 }
             }
@@ -1009,10 +1060,6 @@ public class T1_Programmer{
                     else if (state==HEX){
                         currentString=new Code_Trans().B_trans(currentString);
                         ans.setText(currentString);
-                        if (currentString.substring(0,1)=="-"){
-                            //如果转换过来是负号  就要自动加一个括号
-                            currentString="("+currentString+")";
-                        }
                     }
                 }
             }
