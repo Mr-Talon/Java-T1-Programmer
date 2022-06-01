@@ -101,7 +101,13 @@
 
 ### 3、系统设计方案
 
-#### **1）界面设计方案**
+#### 1）软件架构
+
+项目代码主要分为交互和事件处理部分以及三个核心算法。主类创建在交互和事件处理类T1_Programmer中，中间需要使用进制转换、计算、取反码补码的算法只需要调用相关算法类的**静态方法**，或者是在T1_Programmer类的事件处理方法中创建算法类的**匿名内部类**调用相关方法实现对话。能够实现这一操作得益于java的**包管理机制**，由于所有类都创建在项目包内，所以可以不受限制的相互调用。这样做能够将事件处理、算法编写分离，便于分工协作，每个人只需要知道自己会从上游获得什么，需要输出什么，不必要对小组其他成员代码的细节有详细了解，实现每个人工作的松耦合。
+
+<img src="pic/QQ%E6%88%AA%E5%9B%BE20220601004002.png" style="zoom: 67%;" />
+
+#### **2）界面设计方案**
 
 java.swing界面设计方案可以通过直接编写代码完成，也可以使用集成开发环境中的java swing GUI设计工具包完成。对于课程学习，掌握swing类的继承关系，类的方法和属性，直接编写代码更加合适。对于工程项目，大量的交互组件和互相包含的容器组合，使用快速开发工具更加准确和方便。
 
@@ -139,7 +145,7 @@ java.swing界面设计方案可以通过直接编写代码完成，也可以使�
 
 ![](pic/QQ%E6%88%AA%E5%9B%BE20220530143720.png)
 
-#### 2）**交互设计方案**
+#### 3）**交互设计方案**
 
 用户输入统一使用对按钮的**高级事件处理**，即点击按钮触发**输入**，用户输入会在显示模块显示，每次显示一个操作数或者是左右括号。每当用户输入一个操作符或者是左右括号，表示上一个操作数输入完毕。这样设计符合数学上算术逻辑表达式的语法，符合TI程序员计算器的说明文档，也符合当前市面上主流的计算器交互逻辑。同时我们增加了两个功能，**回退**按钮“<--”和**清空**按钮“CLC”，更加方便用户对当前输入进行修改。
 
@@ -151,7 +157,7 @@ java.swing界面设计方案可以通过直接编写代码完成，也可以使�
 
 **这样将纷繁复杂是防止用户错误输入的工作交由事件处理解决，既符合了错误的产生和消除逻辑，又可以让算法设计在相对理想的环境下完成。**
 
-#### **3）核心功能设计方案**
+#### **4）核心功能设计方案**
 
 **混合进制计算器的输入方案**
 
@@ -202,9 +208,37 @@ expression+=currentString;
 
 
 
-#### **4）错误触发及消除设计方案**
+#### **5）错误触发及消除设计方案**
 
+错误都是通过用户的输入或者是计算造成的，而且计算器的错误繁多，因此将错误的处理机制写在每一个按钮的事件处理里面，可以很好的进行分析，做到尽可能没有遗漏。
 
+对于非致命的错误，计算器不会做出响应，这一部分已经在**核心功能设计方案-混合进制计算器的输入方案**中陈述。以下只讨论会触发错误信号的错误的触发和消除。
+
+**触发**：
+
+1. **0-9**，当输入的位数超过了8位，就会引起输入溢出错误INPUT_OVERFLOW。
+2. **A-F**，输入状态是10进制，会引起语法错误HEX_INPUT_WHEN_DEX，同时和0-9一样也会引输入溢出错误INPUT_OVERFLOW。
+3. **小数点**，16进制下不可以输入小数，会引起语法错误INPUT_DOT_WHEN_HEX，溢出同上。
+4. **左括号**，左括号前面是右括号或者是操作数会引起语法错误PARENTHESES_ERROR。
+5. **右括号**，右括号前面是左括号或者是其他操作符会引起语法错误PARENTHESES_ERROR。
+6. **十进制按钮**，16进制转10进制可能会溢出，触发输出溢出错误OUTPUT_OVERFLOW。
+7. **十六进制按钮**，十进制小数无法转换成16进制，会产生语法错误INPUT_DOT_WHEN_HEX。
+8. **加号乘号除号**，加号乘号除号前面是左括号会产生语法错误PARENTHESES_ERROR。
+9. **减号**，减号在16进制状态充当负号使用会触发语法错误NEGATIVE_WHEN_HEX。
+10. **与或异或移位**，除了和加乘除一样不可以在左括号后使用，还不可以在10进制模式下使用，会产生AND_WHEN_DEC、OR_WHEN_DEC、XOR_WHEN_DEC、SHE_WHEN_DEC。
+11. **取反码补码**，在10进制使用，会产生语法错误SC1_WHEN_DEC、SC1_WHEN_DEC、SC2_WHEN_DEC.
+12. **等号**，总表达式左右括号数量不一致，产生语法错误MISS_PARENTHESES；表达式最后是左括号，产生语法错误PARENTHESES_ERROR；表达式最后是操作符，产生语法错误EQUAL_ERROR；收到算法抛出的除以0的异常，产生语法错误DIVIDE_ZERO；输出结果溢出，产生溢出错误OUTPUT_OVERFLOW。
+
+**消除**
+
+1. **十进制按钮**，16进制输入小数点产生的错误回到10进制应该消除。
+2. **十六进制按钮**，10进制输入16进制操作数、10进制使用取反码、补码按钮产生的错误转换到16进制应该被消除。
+3. **回退按钮**，通过回退按钮使得当前输入文本没有溢出就将溢出信号去除；16进制模式下输入了小数点或者是10进制小数转换成16进制产生的错误，如果表达式中小数点已经消除，该错误信号应该消除；10进制情况下输入了ABCDEF可以通过删除ABCDEF去除语法错误；此外通过回退按钮使得当前输入文本清空直接清除所有错误。
+4. **清空按钮**，所有溢出错误、语法错误都会消除。
+
+![](pic/Collage_20220601_001848.jpg)
+
+上图从左到右分别展示了，溢出错误，语法错误，用回退按钮消除错误以及用清空按钮消除错误。
 
 
 
@@ -212,11 +246,142 @@ expression+=currentString;
 
 ### 1、用户输入模块与事件处理
 
+#### 1）操作数输入（以0和A为例）
+
+```java
+/*操作数0*/
+a0Button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {    //按钮0需要防止过多的0输入
+                //表达式开头只有在小数点输入的时候可以是0，而且这个时候0一定是字符串的首个元素  如果第一个元素输入了0，第二个元素输入小数点
+                //就不会进入return的分支，因为此时字符串长度已经等于2
+                //只有在开头连续输入0 才是不被允许的 这里不返回错误信号  指示不允许用户这么输入
+                if (error==0){                             //有错误无法输入
+                    if (currentString.length()<8){         //没有溢出 正常进行
+                        if(currentString.length()==1&&currentString.charAt(0) == '0'){
+                            return;                        //当前字符串长度是1 并且输入的操作数是0  就造成了重复输入0
+                        }
+                        if(currentString.contains(")")){   //右括号后不可以是操作数
+                            return;
+                        }
+                        if (currentString.contains("(")){  //由于括号也会显示  所有的操作数会作为括号的结束条件  将括号加入总表达式
+                            expression+=currentString;
+                            currentString="";
+                        }
+                        String text="0";
+                        currentString+=text;
+                        ans.setText(currentString);
+                    }
+                    else {
+                        error=INPUT_OVERFLOW;              //内部错误信号
+                        overflowError.setText("OF");       //计算器界面显示溢出错误
+                    }
+                }
+            }
+        });
+
+/*操作数A*/
+aButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (error==0){
+                    if (currentString.length()<8){
+                        if(currentString.contains(")")){
+                            return;
+                        }
+                        if (state==DEC){                    //对于a-f的字符 只能在16进制输入状态下输入
+                            error=HEX_INPUT_WHEN_DEX;
+                            grammarError.setText("GE");
+                        }
+                        else {                              //正确输入情况
+                            if (currentString.contains("(")){
+                                expression+=currentString;
+                                currentString="";
+                            }
+                            String text=aButton.getText();
+                            currentString+=text;
+                            ans.setText(currentString);
+                        }
+                    }
+                    else {
+                        error=INPUT_OVERFLOW;
+                        overflowError.setText("OF");
+                    }
+                }
+            }
+        });
+```
+
+#### 2）操作符输入（以减号为例）
+
+```java
+MinusButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //减号前面只可能是左括号和右括号或者是数字  10进制情况下可以用减号表示负数
+                if (error==0){
+                    if (state==DEC){
+                        if (expression.length()==0&&currentString==""){
+                            //减号用作负号 要么是表达式的第一项 要么就是左括号之后
+                            String text="-";
+                            currentString=text;         //用作负号直接加入当前表达式
+                            ans.setText(currentString);
+                        }
+                        //在左括号之后
+                        else if (currentString.contains("(")){
+                            expression+=currentString;
+                            currentString="-";
+                            ans.setText(currentString);
+                        }
+                        //用作减号的情况
+                        else {
+                            expression+=currentString;   //操作符需要将之前一个操作数放入总表达式
+                            currentString="";
+                            ans.setText(currentString);
+                        }
+
+                    }
+                    else {
+                        //16进制情况下 不允许输入减号作为负号
+                        if ((expression.length()==0&&currentString=="")||currentString.contains("(")){
+                            error=NEGATIVE_WHEN_HEX;
+                            grammarError.setText("GE");
+                            return;
+                        }
+                        if (!currentString.contains(")")){
+                            currentString=new Translation(currentString).Decimal();  
+                            //16进制将当前表达式加入总表达式需要先转换成10进制
+                            expression+=currentString;
+                            currentString="";
+                            ans.setText(currentString);
+                        }
+                        else{
+                            //右括号直接加入总表达式
+                            expression+=currentString;
+                            currentString="";
+                            ans.setText(currentString);
+                        }
+                    }
+                    if (!Objects.equals(expression, "")){   //由于减号可以作为负号出现在总表达式的第一个字符 所以增加了这个判断
+                        String lastCharE=expression.substring(expression.length()-1);
+                        if (notContainSymbol(lastCharE)&&!currentString.contains("-")){
+                            expression+="-";        //最后jia
+                        }
+                    }
+                }
+            }
+        });
+```
+
+
+
 ### 2、错误信号触发与消除机制
+
+
 
 ### 3、算法模块
 
-算法模块具体见**算法分析**部分
+
 
 
 

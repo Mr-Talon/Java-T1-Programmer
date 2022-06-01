@@ -558,6 +558,7 @@ public class T1_Programmer{
                     if (currentString.contains(")")||isContainNum(currentString)){    //左括号前面是右括号或者是操作数  语法错误
                         error=PARENTHESES_ERROR;
                         grammarError.setText("GE");
+                        return;
                     }
                     if (currentString.contains("-")){
                         expression+=currentString;
@@ -615,6 +616,7 @@ public class T1_Programmer{
                             currentString="";
                             error=OUTPUT_OVERFLOW;
                             overflowError.setText("OF");
+                            return;
                         }
                         else {
                             ans.setText(currentString);
@@ -909,6 +911,7 @@ public class T1_Programmer{
                     if (state==DEC){
                         error=OR_WHEN_DEC;
                         grammarError.setText("GE");
+                        return;
                     }
                     else if (state==HEX){
                         if (!currentString.contains(")")){
@@ -947,6 +950,7 @@ public class T1_Programmer{
                     if (state==DEC){
                         error=AND_WHEN_DEC;
                         grammarError.setText("GE");
+                        return;
                     }
                     else if (state==HEX){
                         if (!currentString.contains(")")){
@@ -979,6 +983,7 @@ public class T1_Programmer{
                     if (state==DEC){
                         error=XOR_WHEN_DEC;
                         grammarError.setText("GE");
+                        return;
                     }
                     else if (state==HEX){
                         if (!currentString.contains(")")){
@@ -1011,6 +1016,7 @@ public class T1_Programmer{
                     if (state==DEC){
                         error=SHE_WHEN_DEC;
                         grammarError.setText("GE");
+                        return;
                     }
                     else if (state==HEX){
                         if (!currentString.contains(")")){
@@ -1054,7 +1060,7 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 if(error==0){
                     if (state==DEC){    //10进制状态下不可以使用反码功能  会返回错误状态信号
-                        error=SC1_WHEN_DEC;
+                        error=SC2_WHEN_DEC;
                         grammarError.setText("GE");
                     }
                     else if (state==HEX){
