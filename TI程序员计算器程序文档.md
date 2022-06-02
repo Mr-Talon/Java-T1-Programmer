@@ -262,6 +262,8 @@ expression+=currentString;
 
 ### 1、用户输入模块与事件处理
 
+用户输入模块的逻辑简单，只是种类繁多，对于不同的按钮有不同的处理方法，下面列举具有代表性的按钮，在注释的帮助下不难理解代码的含义。
+
 #### 1）操作数输入（以0和A为例）
 
 ```java
@@ -296,36 +298,21 @@ a0Button.addActionListener(new ActionListener() {
             }
         });
 
-/*操作数A*/
-aButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (error==0){
-                    if (currentString.length()<8){
-                        if(currentString.contains(")")){
-                            return;
-                        }
-                        if (state==DEC){                    //对于a-f的字符 只能在16进制输入状态下输入
-                            error=HEX_INPUT_WHEN_DEX;
-                            grammarError.setText("GE");
-                        }
-                        else {                              //正确输入情况
-                            if (currentString.contains("(")){
-                                expression+=currentString;
-                                currentString="";
-                            }
-                            String text=aButton.getText();
-                            currentString+=text;
-                            ans.setText(currentString);
-                        }
-                    }
-                    else {
-                        error=INPUT_OVERFLOW;
-                        overflowError.setText("OF");
-                    }
-                }
-            }
-        });
+/*操作数A 只展示部分代码*/
+if (state==DEC){                    //对于a-f的字符 只能在16进制输入状态下输入
+    error=HEX_INPUT_WHEN_DEX;
+    grammarError.setText("GE");
+}
+else {                              //正确输入情况
+    if (currentString.contains("(")){
+        expression+=currentString;
+        currentString="";
+    }
+    String text=aButton.getText();
+    currentString+=text;
+    ans.setText(currentString);
+}
+                    
 ```
 
 #### 2）操作符输入（以减号为例）
@@ -389,11 +376,233 @@ MinusButton.addActionListener(new ActionListener() {
         });
 ```
 
+#### 3）括号输入（以右括号为例）
 
+```java
+RightButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //右括号前面只可能是 右括号或者是操作数
+                if (error==0){
+                    if (!notContainSymbol(currentString.substring(1))||currentString.contains("(")){ 
+                        error=PARENTHESES_ERROR;                //右括号前面是左括号或者是其他操作符  语法错误
+                        grammarError.setText("GE");
+                    }
+                    if (!currentString.contains(")")){
+                        if (state==DEC){
+                            expression+=currentString;          //右括号和左括号不同 左括号可以理解为一个字符 右括号需要理解为一个操作符
+                            currentString="";                   //输入有操作符 代表前一个操作数的结束  需要把操作数置入总表达式
+                        }
+                        else if (state==HEX){
+                            String temp=new Translation(currentString).Decimal();
+                            expression+=temp;                   //16机制下需要转换成10进制才能加入表达式
+                            currentString="";
+                            ans.setText(currentString);
+                        }
+                    }
+                    else {                                       //前面的操作数是右括号  嵌套括号
+                        expression+=currentString;
+                        currentString="";
+                    }
+                    String text=")";
+                    currentString+=text;
+                    ans.setText(currentString);
+                    numOfRightParentheses++;
+                }
+            }
+        });
+```
+
+#### 4）等号
+
+```java
+EqualButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //等号前面可以是 右括号 操作数   不能是左括号 操作符
+                if(error==0){
+                    if (numOfRightParentheses!=numOfLeftParentheses){     //处理少括号的语法错误
+                        error=MISS_PARENTHESES;
+                        grammarError.setText("GE");
+                        return;
+                    }
+                    if (currentString.contains("(")){     			      //括号前面是左括号运算没有结束 错误
+                        error=PARENTHESES_ERROR;
+                        grammarError.setText("GE");
+                        return;
+                    }
+                    if (!notContainSymbol(expression.substring(expression.length()-1))&&currentString==""){  
+                        //等号前面不可以是操作符
+                        error=EQUAL_ERROR;
+                        grammarError.setText("GE");
+                        return;
+                    }
+
+                    //16进制走这条分支
+                    if (state==HEX){
+                        if (!currentString.contains(")")){                //前面可能是右括号 或者是操作数   此分支处理操作数的情况
+                            currentString=new Translation(currentString).Decimal();
+                            expression+=currentString;
+                        }
+                        else{                                             //此分支 前面是括号 不需要转换成10进制 直接加入总表达式
+                            expression+=currentString;
+                        }
+
+                        System.out.println("cal前："+expression);
+                        try{
+                            currentString=Calculator.compute(expression); //计算结果返回一个字符串  10进制
+                        }
+                        catch (ArithmeticException exception){            //算法会抛出除以0的异常对象
+                            error=DIVIDE_ZERO;
+                            grammarError.setText("GE");
+                            return;
+                        }
+                        System.out.println("cal后："+currentString);
+
+                        //16进制后处理
+                        BigDecimal Up = BigDecimal.valueOf(2147483647);    //16进制上界
+                        BigDecimal Down = BigDecimal.valueOf(-2147483648); //16进制下界
+                        BigDecimal tempAns1 =BigDecimal.valueOf(Double.parseDouble(currentString));
+                        if (tempAns1.compareTo(Up) < 0 && tempAns1.compareTo(Down) > 0){//判断是否溢出
+                            if(currentString.contains(".")){
+                                //计算结果有小数  只有16进制除法会遇到这种情况  自动转换成10进制模式
+                                state=DEC;
+                                DECState.setText("DEC");
+                                HEXState.setText("         ");
+                                if (currentString.length()>9){             //对于无限小数（除法运算会产生）
+                                    //以下是四舍五入算法
+                                    int point=currentString.indexOf(".");  //获取表达式小数点位置
+                                    int need_to_left=8-point-1;            //计算小数点后需要保留的位数
+                                    tempAns1=BigDecimal.valueOf(Double.parseDouble(currentString.substring(0,8)));
+                                    if (Integer.parseInt(currentString.substring(7,8)) >=5){   
+                                        //根据返回字符串的第九位判断是否需要四舍五入
+                                        String plus="0.";
+                                        for(int i=0;i<need_to_left-1;i++){
+                                            plus+="0";
+                                        }
+                                        plus+="1";                         //制造一个五入的小数
+                                        Double plusNum=Double.parseDouble(plus);
+                                        tempAns1=tempAns1.add(BigDecimal.valueOf(plusNum));
+                                        ans.setText(tempAns1.stripTrailingZeros().toPlainString());
+                                        expression="";
+                                    }
+                                    else {                                 //不需要四舍五入直接截取字符串
+                                        ans.setText(tempAns1.stripTrailingZeros().toPlainString());
+                                        expression="";                  
+                                    }
+                                }
+                                else {
+                                    ans.setText(tempAns1.stripTrailingZeros().toPlainString());
+                                    expression="";
+                                }
+                            }
+                            else {
+                                currentString=new Translation(currentString).Hexadecimal();
+                                //输出没有小数点直接将结果展示出来
+                                ans.setText(currentString);
+                                expression="";
+                            }
+                        }
+                        else {                                     
+                            error=OUTPUT_OVERFLOW;  //输出结果溢出
+                            overflowError.setText("OE");
+                        }
+                    }
+                    /*10进制和16进制逻辑一样  考虑到篇幅不进行展示*/
+                }
+            }
+        });
+```
 
 ### 2、错误信号触发与消除机制
 
+#### 1）错误信号的触发
 
+错误信号的触发是有输入的操作数以及计算产生的，已近在用户输入模块与事件处理的代码分析中详细讲解
+
+#### 2）错误信号的消除
+
+**回退按钮和清楚全部按钮**
+
+```java
+		/*回退按钮*/
+		BACKSPACEButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(currentString.length()>0){
+                    currentString=currentString.substring(0,currentString.length()-1);
+
+                    //通过回退按钮使得当前输入文本没有溢出  就将溢出信号去除
+                    if (error==INPUT_OVERFLOW&&currentString.length()<8){
+                        error=0;
+                        overflowError.setText("         ");
+                    }
+
+                    //这个错误会在两种情况发生 一个是16进制模式下输入了小数点 一个是10进制小数转换成16进制
+                    //如果通过回退按钮删除了小数点 这个错误信号应该消失
+                    if (error==INPUT_DOT_WHEN_HEX&&!currentString.contains(".")){
+                        error=0;
+                        grammarError.setText("         ");
+                    }
+
+                    //如果10进制情况下输入了ABCDEF可以通过删除ABCDEF去除语法错误
+                    if (error==HEX_INPUT_WHEN_DEX&&notContainABCDEF(currentString)){
+                        error=0;
+                        grammarError.setText("         ");
+                    }
+
+                    //通过回退按钮使得当前输入文本清空 直接清除所有错误
+                    if (currentString.length()==0&&grammarError.getText()!=""){
+                        error=0;
+                        grammarError.setText("         ");
+                    }
+
+                    if(error==0){
+                        ans.setText(currentString);
+                    }
+                }
+            }
+        });
+
+        /*清空按钮*/
+        CLCButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                currentString="";
+                ans.setText(currentString);
+                expression="";
+
+                numOfLeftParentheses=0;
+                numOfRightParentheses=0;
+
+                //清零按钮按下之后 所有错误信号和所有输入全部清空
+                error=0;
+                overflowError.setText("         ");
+                grammarError.setText("         ");
+            }
+        });
+```
+
+**进制转换按钮（以转换成16进制为例）**
+
+```java
+HEXButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (error==0||error==HEX_INPUT_WHEN_DEX||error==SC1_WHEN_DEC||error==SC2_WHEN_DEC){
+                    //16进制按钮可以消除10进制的语法错误
+                    
+					/*省略了进制转换内部的代码*/
+                    
+                    if (error==HEX_INPUT_WHEN_DEX||error==SC1_WHEN_DEC||error==SC2_WHEN_DEC){   
+                        //如果已经触发了输入语法错误 通过转换状态应该消除错误信号
+                        error=0;
+                        grammarError.setText("         ");
+                    }
+                }
+            }
+        });
+```
 
 ### 3、算法模块
 
@@ -420,6 +629,18 @@ MinusButton.addActionListener(new ActionListener() {
 
 
 ## 五、**参考文献和材料**
+
+[1]GALLARDO R,HOMMEL S。Java语言导学（原书第6版）[M]。北京：机械工业出版社，2017.7
+
+[2]耿祥义，张跃平。Java面向对象程序设计：微课视频版（第3版）[M]。北京：清华大学出版社，2020.1
+
+[3]Oracle. Java Documentation[DB/OL]. [2022-6-2]. https://docs.oracle.com/en/java/
+
+[4]白白旧维. idea的Java窗体可视化工具Swing UI Designer的简单使用（一）[DB/OL]. （2021-06-12）[2022-6-2].  https://blog.csdn.net/weixin_43444930/article/details/117855310?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522165410106616781685350733%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=165410106616781685350733&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-117855310-null-null.142
+
+[5]丿乐灬学. java BigDecimal加减乘除[DB/OL].  (2018-07-10 )[2022-6-2]. https://blog.csdn.net/qq_37880968/article/details/80986545?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522165410125116782246455950%2522%252C%2522scm%2522%253A%252220140713.130102334.pc%255Fall.%2522%257D&request_id=165410125116782246455950&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~first_rank_ecpm_v1~rank_v31_ecpm-4-80986545-null-null.142
+
+[6]吴师兄学算法. 还不会使用 GitHub ？ GitHub 教程来了！万字图文详解[DB/OL].  （2021-10-13）[2022-6-2]. https://zhuanlan.zhihu.com/p/369486197
 
 
 
