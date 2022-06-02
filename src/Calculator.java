@@ -1,3 +1,4 @@
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ public class Calculator {
     private static final Stack<Character> op = new Stack<>(); // 存操作符
     private static final Stack<BigDecimal> num = new Stack<>(); // 存操作数
     private static final HashMap<Character, Integer> priMap = new HashMap<>(); // 优先级哈希表
+
     static {
         // 初始化哈希表
         priMap.put('(', 0);
@@ -57,13 +59,21 @@ public class Calculator {
                 break;
             }
             case '<': {
-                int i = b.intValue();
-                x = new BigDecimal(2);
-                for ( ; i > 0; i -- )
-                    a = a.multiply(x);
-                for ( ; i < 0; i ++ )
-                    a = a.divide(x, 8, RoundingMode.HALF_UP);
-                x = a;
+                int k = b.intValue();
+                String binStr = Integer.toBinaryString(a.intValue());
+                binStr = Code_Trans.formatBin(binStr); //标准化为32位
+                if(k > 0) { // 左移
+                    for(int j = 0; j < k; j ++ )
+                        binStr = binStr + "0";
+                    binStr = binStr.substring(k, k + 32);
+                } else { // 右移
+                    for(int j = 0; j > k; j -- )
+                        binStr = "0" + binStr;
+                    binStr = binStr.substring(0, 32);
+                }
+                String hexStr = Code_Trans.binToHex(binStr);
+                Translation tr = new Translation(hexStr);
+                x = new BigDecimal(Integer.parseInt(tr.Decimal()));
                 break;
             }
 
