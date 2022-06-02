@@ -1097,6 +1097,9 @@ public class T1_Programmer{
                     if (state==HEX){
                         if (!currentString.contains(")")){     //前面可能是右括号 或者是操作数   此分支处理操作数的情况
                             currentString=new Translation(currentString).Decimal();
+                            if(currentString.contains("-")){
+                                currentString="("+currentString+")";
+                            }
                             expression+=currentString;
                         }
                         else{      //此分支 前面是括号 不需要转换成10进制 直接加入总表达式
