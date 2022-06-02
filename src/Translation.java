@@ -31,7 +31,7 @@ public class Translation {
             else{
                 long num = Long.parseLong(s, 16);//正数调用parseLong方法
                 String ss = String.valueOf(num);
-                return s;
+                return ss;
             }
 
         }
