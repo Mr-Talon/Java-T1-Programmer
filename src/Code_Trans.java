@@ -19,8 +19,7 @@ public class Code_Trans {
             但是我们这里需要输入的是带符号位的十六进制字符串,
             而我们的Translation类帮我们实现了这一方法
          */
-        Translation tr = new Translation(hex);
-        int dec = Integer.parseInt(tr.Decimal()); //tr返回的是字符串，范围在32位int内，可以转为int
+        int dec = Integer.parseInt(new Translation(hex).Decimal());//Decimal()返回的是字符串，范围在32位int内，可以转为int
         return Integer.toBinaryString(dec); //toBinaryString方法返回int的补码形式，带符号位
     }
     public static String binToHex(String bin) { //二进制字符串转小写16进制字符串

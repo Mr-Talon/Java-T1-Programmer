@@ -21,7 +21,7 @@ public class Calculator {
     private static final HashMap<Character, Integer> priMap = new HashMap<>(); // 优先级哈希表
 
     static {
-        // 初始化哈希表
+        // 初始化优先级哈希表，优先级高的先运算
         priMap.put('(', 0);
         priMap.put('<', 1);
         priMap.put('|', 2);
@@ -32,109 +32,107 @@ public class Calculator {
         priMap.put('*', 6);
         priMap.put('/', 6);
     }
-    private static void eval(){ //只有十进制的时候可以计算小数
+    private static void eval(){
         BigDecimal x = new BigDecimal(0);
-        if(op.empty()) {
+        if(op.empty()) { // 异常：操作数冗余
             throw new NullPointerException("格式错误！");
         }
         char c = op.peek(); op.pop();
         if(c == '(') return; // 左括号无效，直接返回
-        if(num.size() < 1) {
+        if(num.size() < 1) { // 异常：操作符冗余
             throw new NullPointerException("格式错误！");
         }
-        BigDecimal b = num.peek(); num.pop();
-        BigDecimal a = num.peek(); num.pop();
-//        System.out.println(a.toString() + c + b.toString());
-        switch (c) {
+        BigDecimal b = num.peek(); num.pop(); // 栈中先弹出的是第二操作数b
+        BigDecimal a = num.peek(); num.pop(); // 后弹出的是第一操作数a
+        switch (c) { // 分情况执行对应运算
             case '+': x = a.add(b); break;
             case '-': x = a.subtract(b); break;
             case '*': x = a.multiply(b); break;
             case '/':
             {
                 try {
-                    x = a.divide(b, 8, RoundingMode.HALF_UP);// 保留8位小数， 四舍五入
+                    x = a.divide(b, 8, RoundingMode.HALF_UP);// 保留8位小数，四舍五入
                 } catch(ArithmeticException e) {
                     throw new ArithmeticException("除数不能为0！");
                 }
                 break;
             }
-            case '<': {
+            case '<': { // 移位符号，b>0左移b个bit，b<0右移-b个bit
                 int k = b.intValue();
-                String binStr = Integer.toBinaryString(a.intValue());
-                binStr = Code_Trans.formatBin(binStr); //标准化为32位
+                String binStr = Integer.toBinaryString(a.intValue()); // 转为2进制字符串进行移位模拟
+                binStr = Code_Trans.formatBin(binStr); //标准化为32位2进制字符串
                 if(k > 0) { // 左移
                     for(int j = 0; j < k; j ++ )
                         binStr = binStr + "0";
-                    binStr = binStr.substring(k, k + 32);
+                    binStr = binStr.substring(k, k + 32); // 截取低位部分
                 } else { // 右移
                     for(int j = 0; j > k; j -- )
                         binStr = "0" + binStr;
-                    binStr = binStr.substring(0, 32);
+                    binStr = binStr.substring(0, 32); // 截取高位部分
                 }
-                String hexStr = Code_Trans.binToHex(binStr);
-                Translation tr = new Translation(hexStr);
-                x = new BigDecimal(Integer.parseInt(tr.Decimal()));
+                String hexStr = Code_Trans.binToHex(binStr); // 先转为16进制字符串
+                String dec = new Translation(hexStr).Decimal(); // 再转为10进制字符串
+                x = new BigDecimal(Integer.parseInt(dec)); // 再转为int，然后转为BigDecimal
                 break;
             }
-
+            // 逻辑运算就转为int后直接运算，然后再转为BigDecimal
             case '|' : x = new BigDecimal(a.intValue() | b.intValue()); break;
             case '^' : x = new BigDecimal(a.intValue() ^ b.intValue()); break;
             case '&' : x = new BigDecimal(a.intValue() & b.intValue()); break;
         }
-//        System.out.println(x.toString());
-        num.push(x);
+        num.push(x); // 运算结果再压入栈
     }
-    private static void init() {
+    private static void init() { // 初始化，将栈清空
         while(!num.empty()) num.pop();
         while(!op.empty()) op.pop();
         op.push('('); //// 初始化操作符栈底
     }
-    public static String compute(String s){ //静态方法，直接使用类名.方法名调用
+    public static String compute(String infixExpression){ // 得到一个中缀表达式字符串，返回对应的计算结果
         init();
-        int n = s.length();
-        for (int i = 0; i < n; i ++ ) {
-            if (Character.isDigit(s.charAt(i))) {
+        int n = infixExpression.length();
+        for (int i = 0; i < n; i ++ ) { // 逐字符扫描表达式
+            if (Character.isDigit(infixExpression.charAt(i))) { // 当前字符是数字
                 BigDecimal x = new BigDecimal(0);
-                int j = i, dot = 0;
-                while (j < n && Character.isDigit(s.charAt(j))) {
+                int j = i, dot = 0; // j记录从下标i开始一直扫描到哪个字符的下标， dot记录小数点位数
+                while (j < n && Character.isDigit(infixExpression.charAt(j))) { // 向后扫描获取完整的数字
                     x = x.multiply(BigDecimal.valueOf(10));
-                    x = x.add(BigDecimal.valueOf(s.charAt(j) - '0'));
+                    x = x.add(BigDecimal.valueOf(infixExpression.charAt(j) - '0'));
                     j ++;
                 }
-                if (j < n && s.charAt(j) == '.') { // 小数部分
+                if (j < n && infixExpression.charAt(j) == '.') { //遇到小数点，处理小数部分
                     j ++;
                     BigDecimal y = new BigDecimal(0);
-                    while (j < n && Character.isDigit(s.charAt(j))) {
+                    while (j < n && Character.isDigit(infixExpression.charAt(j))) { // 向后扫描获取完整的数字
                         y = y.multiply(BigDecimal.valueOf(10));
-                        y = y.add(BigDecimal.valueOf(s.charAt(j) - '0'));
+                        y = y.add(BigDecimal.valueOf(infixExpression.charAt(j) - '0'));
                         j ++;
                         dot ++;
                     }
-                    for (int k = 0; k < dot; k ++ ) {
-                        y = y.divide(BigDecimal.valueOf(10), 8, RoundingMode.HALF_UP);
+                    for (int k = 0; k < dot; k ++ ) { //根据dot的值来将扫描到的整数变为小数
+                        y = y.divide(BigDecimal.valueOf(10), 8, RoundingMode.HALF_UP); // 8位小数，四舍五入
                     }
-                    x = x.add(y);
+                    x = x.add(y); // 整数部分加上小数部分
                 }
-                i = j - 1;
+                i = j - 1; // 由于上面for循环会++， 想要下面处理j下标的字符，i就要在j前面一个下标的位置
                 num.push(x);
-            } else if (s.charAt(i) == '(')
-                op.push(s.charAt(i));
-            else if (s.charAt(i) == ')') {
+            } else if (infixExpression.charAt(i) == '(') // 左括号，直接压入栈
+                op.push(infixExpression.charAt(i));
+            else if (infixExpression.charAt(i) == ')') { // 右括号，一直eval()计算，直到操作数栈顶为左括号
                 while(op.peek() != '(')
                     eval();
-                op.pop();
-            } else
+                op.pop(); // 把左括号弹出，表示括号里的全部处理完毕
+            } else // 否则是其他的操作符: + - * / < | ^ &
             {
-                char c = s.charAt(i);
-                if(c != '-' || (i > 0 && (Character.isDigit(s.charAt(i - 1)) || s.charAt(i - 1) == ')'))) { // 当前‘-’不是负号
-
+                char c = infixExpression.charAt(i);
+                if(c != '-' || (i > 0 && (Character.isDigit(infixExpression.charAt(i - 1)) || infixExpression.charAt(i - 1) == ')'))) {
+                    // 当前"-"不是负号
+                    // 如果操作符栈不空，并且栈顶符号优先级大于等于当前符号优先级，就一直eval()计算
                     while (!op.empty() && priMap.get(op.peek()) >= priMap.get(c))
                         eval();
-
-                    op.push(c);
-                } else { // 如果是负号，则相当于-1 * 这个数
-                    num.push(BigDecimal.valueOf(-1.0));
-                    while(!op.empty() && priMap.get(op.peek()) > priMap.get('*'))
+                    op.push(c); // 此时保证当前字符的优先级在栈中是最高的
+                } else { // 当前"-"是负号，则相当于(-1) * (后面的一系列表达式)
+                    num.push(BigDecimal.valueOf(-1)); // 操作数栈压入-1后，下面相当于扫描到一个"*"
+                    while(!op.empty() && priMap.get(op.peek()) > priMap.get('*')) // 同上
                         eval();
                     op.push('*');
                 }
