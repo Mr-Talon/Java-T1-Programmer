@@ -100,6 +100,8 @@
 
 <img src="pic/QQ截图20220529165526.png" style="zoom: 50%;" />
 
+
+
 ### 3、系统设计方案
 
 #### 1）软件架构
@@ -223,7 +225,13 @@ expression+=currentString;
 
 ##### **反码补码方案**
 
+**转反码：**TI计算器有效位数的字符串：调用BintoHex类中的hexStr2BinStr方法转为2进制字符串，再补成32位，进行取反操作，Translation类新建对象，用以返回取反后的16进制。
 
+**转补码：**由于补码是由反码末尾+1，所以先转为反码，与之前的一致。
+
+1. 反码不全是1：循环找到字符串最后一个0，置为1，后面的取反
+
+2. 反码全是1：不论位数是多少，二进制数值位全为0，符号位为1，始终为+0.
 
 #### **5）错误触发及消除设计方案**
 
@@ -607,11 +615,93 @@ HEXButton.addActionListener(new ActionListener() {
         });
 ```
 
-
-
 ### 3、算法模块
 
+#### 1）计算器计算算法
 
+
+
+#### 2）进制转换
+
+
+
+#### 3）取反码取补码
+
+**取反码**：
+
+**思路**：将输入的16进制字符串转为32位二进制，每一位取反，再转回16进制，得到16进制反码。
+
+**具体描述**：首先将输入的16进制转为2进制，再将其补充前导0直至它有32位。然后将字符串转为字符数组，接下来循环取反。取反之后再将字符数组转为字符串（二进制），最后调用binToHex方法转回16进制。
+
+<img src="pic/111.png" style="zoom:80%;" />
+
+```java
+/*取反码核心代码*/
+String F_trans(String s) {//反码
+        String str_bin = hexToBin(s); //转为二进制字符串
+        str_bin = formatBin(str_bin); //标准化为32位二进制
+        char[] str = str_bin.toCharArray();//包括符号位和数值位
+        for (int i = 0; i < str.length; i++)//转成反码，数值位取反
+        {
+            if (str[i] == '0')
+                str[i] = '1';
+            else
+                str[i] = '0';
+        }
+        //二进制反码转十六进制
+        String binaryStr = new String(str);//更新后的字符数组再转回字符串
+        String hexStr = binToHex(binaryStr);//二进制字符串转十六进制字符串
+        return hexStr.toUpperCase();//大写
+}
+
+```
+
+**取补码：**
+
+**思路**：将输入的16进制字符串转为32位二进制，每一位取反，末尾加1，在转回16进制，得到补码。
+
+**具体描述**：首先将输入的16进制转为2进制，再将其补充前导0直至它有32位。然后将字符串转为字符数组，接下来循环取反。接下来是末尾+1，这里采用的方法是寻找到最后一个0，，如果一个0也没有，证明这个需要整体进位，直接返回+0。找到了，将这个0变成1，这个0之后的所有数（都是1）变为0实现末尾+1再将字符数组转为字符串（二进制），最后调用binToHex方法转回16进制。
+
+<img src="pic/2222.png" style="zoom:80%;" />
+
+```java
+/*取补码核心代码*/
+String B_trans(String s) {
+        //补码为反码+1
+        String fHex = F_trans(s); //先变为反码16进制
+        String str_bin = hexToBin(fHex); //后转2进制
+        str_bin = formatBin(str_bin); //标准化为32位
+        char[] str = str_bin.toCharArray();//字符串转换成字符数组好赋值
+        // +1操作
+        int index = -1;
+        int flag = 0;
+        for (int i = 0; i < str.length; i++) {
+            if (str[i] == '0')
+                index = i;//找到最后一个0
+        }
+        if (index != -1)//整体不用进位
+        {
+            str[index] = '1';
+            for (int i = index + 1; i < str.length; i++) {
+                str[i] = '0';
+            }
+        } else {//整体需要进位即1……11这种情况
+            flag = 1;
+            for (int i = 0; i < str.length; i++) {
+                str[i] = '0';
+            }
+        }
+        if (flag == 0)//整体没有进位，用原始字符数组
+        {
+            String binaryStr = new String(str);// 更新后的字符数组再转回字符串
+            String hexStr = binToHex(binaryStr);//二进制字符串转十六进制字符串
+            return hexStr.toUpperCase();//大写
+        } else {//整体有进位，唯一的：+0
+            return "0";
+        }
+    }
+
+```
 
 
 
@@ -626,6 +716,79 @@ HEXButton.addActionListener(new ActionListener() {
 
 
 ### 3、反码、补码算法分析
+
+**取反码：**
+
+**空间复杂度分析**：
+
+最大位数固定为32，空间复杂度为$O(1)$
+
+**时间复杂度分析**：
+
+```java
+String F_trans(String s) {
+        String str_bin = hexToBin(s);  
+        str_bin = formatBin(str_bin); 
+        char[] str = str_bin.toCharArray();
+        for (int i = 0; i < str.length; i++)        //O(n)
+        {
+            if (str[i] == '0')
+                str[i] = '1';
+            else
+                str[i] = '0';
+        }
+        String binaryStr = new String(str);
+        String hexStr = binToHex(binaryStr);
+        return hexStr.toUpperCase();
+    }
+```
+
+核心的步骤是一个for循环，取反（取反码）时间复杂度为$O(n)$，其余的为$O(1)$。综上，时间复杂度为$O(n)$。
+
+**取补码：**
+
+**空间复杂度分析：**
+
+最大位数固定为32，空间复杂度为$O(1)$
+
+**时间复杂度分析**：
+
+```java
+String B_trans(String s) {
+        String fHex = F_trans(s); 
+        String str_bin = hexToBin(fHex); 
+        str_bin = formatBin(str_bin); 
+        char[] str = str_bin.toCharArray();
+        int index = -1;
+        int flag = 0;
+        for (int i = 0; i < str.length; i++) {          //O(n)
+            if (str[i] == '0')
+                index = i;
+        }
+        if (index != -1)
+        {
+            str[index] = '1';
+            for (int i = index + 1; i < str.length; i++) {
+                str[i] = '0';
+            }
+        } else {
+            flag = 1;
+            for (int i = 0; i < str.length; i++) {       //O(n)
+                str[i] = '0';
+            }
+        }
+        if (flag == 0)
+        {
+            String binaryStr = new String(str);
+            String hexStr = binToHex(binaryStr);
+            return hexStr.toUpperCase();
+        } else {
+            return "0";
+        }
+    }
+```
+
+核心的步骤是两个for循环，一个是取反（取反码），另一个是查找0（末尾+1）时间复杂度都为$O(n)$，其余的为$O(1)$。综上，时间复杂度为$O(n)$。
 
 
 
@@ -712,11 +875,49 @@ HEXButton.addActionListener(new ActionListener() {
 
 #### 2）混合进制计算器的输入
 
+由于错误信号的处理主要是在事件处理阶段进行的，而这款计算器的逻辑功能和市面上常见的计算器有比较大的区别，由于功能的独特，错误也很有特点。对于计算器的功能和错误信号的认识也是在不断调试和反复阅读功能文档的过程中不断迭代升级的。
+
+**问题1**：关闭按钮事件处理问题。
+
+**解决方法1**：由于OFF按钮需要把整个JFrame对象关闭掉，需要能够引用到frame，所以写在main函数中。通过创建窗口事件使得计算器窗口关闭。
+
+**问题2**：在有错误信号产生的时候还是可以输入。
+
+**解决方案2**：在所有按钮的事件处理中，首先判断错误信号是否存在。
+
+**问题3**：10进制表达式中有小数点，转换成16进制算法报错。
+
+**解决方案3**：增加错误信号类型，增加小数点检测。
+
+**问题4**：由于括号的加入，进制转换出现bug
+
+**解决法案4**：进制转换的if判断增加一个逻辑
+
+**问题5**：计算结果是10的整倍数返回科学计数法，导致表达式带有小数点使得后处理函数误判。
+
+**解决方案5**：使用BigDecimal中的stripTrailingZeros().toPlainString()方法处理得到的结果。
+
 #### 3）**计算器计算算法**
+
+
 
 #### 4）进制转换
 
+
+
 #### 5）反码补码
+
+**问题1**：对字符串的单个进行操作后报错。
+
+**解决方案1**：将字符串转换成字符数组后可以直接使用。
+
+**问题2**：转化为反码/补码后不是八位16进制数。
+
+**解决方案2**：这是由于缺少前导0，所以将输入的16进制转化为二进制后先补充前导0，直至其为32位，这样转回16进制时就保证是8位16进制数。
+
+**问题3**：在进行补充前导0的操作时，用字符串+有警告。
+
+**解决方案3**：string不能直接用+操作，使用stringBuilder类中的append方法，解决警告。
 
 
 
@@ -733,6 +934,10 @@ HEXButton.addActionListener(new ActionListener() {
 [5]丿乐灬学. java BigDecimal加减乘除[DB/OL].  (2018-07-10 )[2022-6-2]. https://blog.csdn.net/qq_37880968/article/details/80986545?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522165410125116782246455950%2522%252C%2522scm%2522%253A%252220140713.130102334.pc%255Fall.%2522%257D&request_id=165410125116782246455950&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~first_rank_ecpm_v1~rank_v31_ecpm-4-80986545-null-null.142
 
 [6]吴师兄学算法. 还不会使用 GitHub ？ GitHub 教程来了！万字图文详解[DB/OL].  （2021-10-13）[2022-6-2]. https://zhuanlan.zhihu.com/p/369486197
+
+[7] PesenX. 深入理解Java String类 [DB/OL]. (2018-6-28) [2022-6-3].https://blog.csdn.net/ifwinds/article/details/80849184?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522165427507616781667854186%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=165427507616781667854186&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-80849184-null-null.142
+
+[8] 狂风吹我心. 二进制原码，反码，补码 [DB/OL]. (2021-11-21)  [2022-6-22]https://zhuanlan.zhihu.com/p/99082236
 
 
 
@@ -752,4 +957,4 @@ HEXButton.addActionListener(new ActionListener() {
 
 **佘振东**	邮箱：2577484662@.qq.com	Github:fsbbts
 
-负责内容：计算器反码补码算法设计，文档反码补码算法设计、分析、测试部分
+负责内容：计算器反码补码算法设计，文档反码补码算法设计、分析、测试部分  
