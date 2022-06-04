@@ -764,6 +764,119 @@ public static String compute(String infixExpression){ // 得到一个中缀表�
 
 #### 2）进制转换
 
+**主要分析：**进制转换包括两个类Translation、BintoHex，其中类Translaion完成十六进制与十进制的互相转换，在转化过程中，因为需要实现负数的转换，调用BintoHex实现十六进制字符串与二进制字节数组的互相转换，来方便负数的转换。Translation类有两个主要方法，Decimal()以及Hexadecimal()，分别实现十六进制转为十进制，十进制转为十六进制。BintoHex类中有两个主要方法，bin2HexStr()以及hexStr2BinArr,分别实现将二进制数组转换为十六进制字符串以及将十六进制转换为二进制字节数组 。
+
+1.  **十六进制转十进制  Decimal()**
+
+```java
+    public String Decimal() //十六进制转十进制
+    {
+        if(s.length()<8) //判断十六进制代表正负数
+        { long num = Long.parseLong(s, 16);//十六进制代表正数
+        String ss = String.valueOf(num);
+        return ss;//返回字符串
+        }
+        else //十六进制代表负数或者正数
+        {
+            char firstCharacter = s.charAt(0);
+            if(firstCharacter>'7')//当十六进制首字符大于’7‘是负数
+            {
+                String ss=BintoHex.hexStr2BinStr(s);//调用BintoHEX方法获得二进制字符串
+                BigInteger bi = new BigInteger(ss, 2);//调用BigInteger从二进制字符串获得十进制数
+                int final1=bi.intValue();
+                return String.valueOf(final1);
+            }
+            else{
+                long num = Long.parseLong(s, 16);//正数调用parseLong方法
+                String ss = String.valueOf(num);
+                return ss;
+            }
+
+        }
+    }
+```
+
+**2.十进制转十六进制   Hexadecimal()**
+
+```java
+public String Hexadecimal() {
+        if (Integer.parseInt(s) >= 0 && Integer.parseInt(s) <= 16) {//当输入
+            int num = Integer.parseInt(s);
+            String str1 = Integer.toHexString(num);//调用Integer.toHexString获得对应十六进制
+            return str1.toUpperCase();//返回十六进制默认大写
+
+        } else {
+            char array[] = s.toCharArray();
+            BigInteger bi = new BigInteger(s);
+            byte[] byteInteger = bi.toByteArray();//调用BigInteger方法获取十进制对应二进制数组
+            String ss = BintoHex.bin2HexStr(byteInteger);
+            if (ss.length() < 8 && array[0] == '-') {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < 8 - ss.length(); i++) {//补足十六进制F数量
+                    sb.append("F");
+                }
+                return sb + ss;
+            }
+            char array1[] = ss.toCharArray();
+            if (array1[0] == '0') {
+                String strNew = ss.substring(1, ss.length());
+                char array2[] = strNew.toCharArray();
+                while (array2[0] == '0') {
+                    strNew = strNew.substring(1, strNew.length());
+                    array2 = strNew.toCharArray();//删除转换后字符串首字符'o'}
+                }
+                return strNew;
+            }
+            return ss;
+        }
+    }
+```
+
+**3.二进制数组转换为十六进制字符串  bin2HexStr**
+
+```java
+public class BintoHex {
+        private static String hexStr="0123456789ABCDEF";
+public static String[]binaryArray=
+        {"0000","0001","0010","0011",
+        "0100","0101","0110","0111",
+        "1000","1001","1010","1011",
+        "1100","1101","1110","1111"};//十六进制0-F对应二进制 
+public static String bin2HexStr(byte[]bytes){
+
+        String result="";
+        String hex="";
+        for(int i=0;i<bytes.length;i++){//扫描二进制数组
+        //字节高4位
+        hex=String.valueOf(hexStr.charAt((bytes[i]&0xF0)>>4));
+        //字节低4位
+        hex+=String.valueOf(hexStr.charAt(bytes[i]&0x0F)); //每次扫描四位并将对应十六进制字符拼接
+        result+=hex;  //+" "
+        }
+        return result;
+        }
+```
+
+**4.十六进制转换为二进制字节数组   hexStr2BinArr()**
+
+```java
+public static byte[]hexStr2BinArr(String hexString){
+        //hexString的长度对2取整，作为bytes的长度    
+        int len=hexString.length()/2;//当十六进制字符串长度为1时，len=0，该情况在Translation类中已解决
+        byte[]bytes=new byte[len];
+        byte high=0;//字节高四位
+        byte low=0;//字节低四位
+        for(int i=0;i<len;i++){
+        //右移四位得到高位
+        high=(byte)((hexStr.indexOf(hexString.charAt(2*i)))<<4);
+        low=(byte)hexStr.indexOf(hexString.charAt(2*i+1));
+        bytes[i]=(byte)(high|low);//高地位做或运算
+        }
+        return bytes;
+        }
+
+```
+
 
 
 #### 3）取反码取补码
@@ -980,7 +1093,69 @@ Java在java.math包中提供的API类BigDecimal，用来对超过16位有效位�
 
 ### 2、进制转换算法分析
 
+1.**十六进制转十进制**
 
+​      **主要算法**： 首先当十进制字符串可以直接转化为长度为一的十六进制字符串，直接返回结果。然后调用BigInteger方法获取十进制对应二进制数组，根据二进制字节数组调用bin2HexStr方法获得对应十六进制字符串。在返回十六进制结果的时候发现两个问题，一个是当二进制为负数时返回字符串不满足长度为8，因此添加判断手动补足F。另一个问题是，返回十六进制正数且字符串长度为1时，存在前缀0没有省略的情况，也手动去除，最后返回对应十六进制字符串。
+
+**流程图**：
+
+![](C:\Users\杨德宝\Desktop\QQ截图20220605002435.png)
+
+**空间复杂度分析**：
+
+最大位数固定为32，空间复杂度为$O(1)$
+
+**时间复杂度分析**：
+
+调用方法hexStr2BinStr()，时间复杂度为$O(n)$
+
+2.**十进制转十六进制**
+
+​      **主要算法**：一位十六进制数相当于4位二进制数，因此依次扫描二进制数组，每四位对应hexStr()一位字符，然后将字符串拼接，得到对应十六进制字符串。
+
+**流程图**：
+
+![](C:\Users\杨德宝\Desktop\未命名文件 (1).jpg)
+
+**空间复杂度分析**：
+
+最大位数固定为32，空间复杂度为$O(1)$
+
+**时间复杂度分析**：
+
+存在单次循环，时间复杂度为$O(n)$
+
+3.**二进制数组转换为十六进制字符串**
+
+​      **主要算法**：
+
+**流程图**：
+
+![](C:\Users\杨德宝\Downloads\未命名文件 (2).jpg)
+
+**空间复杂度分析**：
+
+最大位数固定为32，空间复杂度为$O(1)$
+
+**时间复杂度分析**：
+
+调用方法bin2HexStr()，时间复杂度为$O(n)$
+
+4.**十六进制转换为二进制字节数组**
+
+​      **主要算法**： 一位十六进制数相当于4位二进制数，因此依次扫描十六进制字符串，每位字符对应四位二进制数，然后填入数组，得到对应二进制字节数组。
+
+**流程图**：
+
+![](C:\Users\杨德宝\Downloads\未命名文件 (3).jpg)
+
+**空间复杂度分析**：
+
+最大位数固定为32，空间复杂度为$O(1)$
+
+**时间复杂度分析**：
+
+存在单次循环，时间复杂度为$O(n)$
 
 ### 3、反码、补码算法分析
 
@@ -1152,7 +1327,19 @@ String B_trans(String s) {
 
 #### 4）进制转换
 
-#### 5）反码补码
+**问题1**：0~16十进制数转十六进制进入死循环
+
+**解决方案1**：单独判断十进制数可转成一位长度十六进制字符串，调用Integer.toHexString()方法直接返回对应字符串
+
+**问题2**：十六进制负数字符串存在缺省F
+
+**解决方案2**：判断返回字符串长度及二进制字节数组首字符，当十六进制为负数时，补齐F并返回修改后的字符串。
+
+**问题3**：返回字符串存在前缀'0'不缺省
+
+**解决方案3**：判断返回字符串并将再次循环判断去零字符串，直至字符串不含前缀'0
+
+
 
 **问题1**：对字符串的单个进行操作后报错。
 
