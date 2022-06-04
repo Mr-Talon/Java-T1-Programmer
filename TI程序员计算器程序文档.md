@@ -72,7 +72,7 @@
 
 3. 16进制只支持**整数**的**加减乘除**算术运算，以及逻辑运算**与、或、异或、移位、求反码、求补码**运算，可以使用**括号**对算数运算和逻辑运算（除求反码、求补码）的计算顺序进行调整。
 
-4. 计算器支持10进制和16进制之间的**进制转换**，一个计算表达式可以是**混合进制输入**（混合进制包括了单一进制）
+4. 计算器支持10进制和16进制之间的**进制转换**，一个计算表达式可以是**混合进制输入**（混合进制包括了单一进制）。
 
 | 序号 | 符号 | 说明     |
 | ---- | ---- | -------- |
@@ -99,8 +99,6 @@
 当错误信号**触发**，应该有相关信号展示，并且禁止用户的后续输入，只有当错误信号**消除**，才可以继续输入。
 
 <img src="pic/QQ截图20220529165526.png" style="zoom: 50%;" />
-
-
 
 ### 3、系统设计方案
 
@@ -201,7 +199,9 @@ expression+=currentString;
 
 ##### **计算器计算算法**
 
+对于计算机来说，后缀表达式更方便计算，而中缀表达式对于人来说更加直观。显然，人操作计算器，输入的是中缀表达式（infix expression）。所以，我们的计算类Calculator提供了一个静态方法`public static String compute(String infixExpression)`，接收一个中缀表达式字符串，经过一系列计算，返回一个结果字符串。
 
+在实现计算的过程中，如果过程量出现一个数除以0的情况，会抛出算数运算异常`ArithmeticException`；此外，如果输入的表达式不符合中缀表达式的规范，导致计算过程中出现了一些操作数与操作符个数不符的情况，会抛出空指针异常`NullPointerException`。
 
 ##### **进制转换方案**
 
@@ -229,9 +229,6 @@ expression+=currentString;
 
 **转补码：**由于补码是由反码末尾+1，所以先转为反码，与之前的一致。
 
-1. 反码不全是1：循环找到字符串最后一个0，置为1，后面的取反
-
-2. 反码全是1：不论位数是多少，二进制数值位全为0，符号位为1，始终为+0.
 
 #### **5）错误触发及消除设计方案**
 
@@ -615,11 +612,155 @@ HEXButton.addActionListener(new ActionListener() {
         });
 ```
 
+
+
 ### 3、算法模块
 
-#### 1）计算器计算算法
+#### 1）计算机计算算法
 
+**Calculator**类包含两个核心方法：单步计算`void eval()`和主计算`String compute(String)`，使用到了两种数据结构：栈`Stack`和哈希表`HashMap`。
 
+```java
+private static final Stack<Character> op = new Stack<>(); // 存操作符
+private static final Stack<BigDecimal> num = new Stack<>(); // 存操作数
+private static final HashMap<Character, Integer> priMap = new HashMap<>(); // 优先级哈希表
+
+private static void eval();
+public static String compute(String infixExpression);
+static {
+    // 初始化优先级哈希表，优先级高的先运算
+    priMap.put('(', 0);
+    /*
+    ...根据下方表格填写
+    */
+}
+```
+
+操作符优先级表：
+
+| 操作符 | 左括号 ( | 移位 < | 按位或 \| | 按位异或 ^ | 按位与 & | 加 + | 减 - | 乘 * | 除 / |
+| :----: | :------: | :----: | :-------: | :--------: | :------: | :--: | :--: | :--: | :--: |
+| 优先级 |    0     |   1    |     2     |     3      |    4     |  5   |  5   |  6   |  6   |
+
+1.单步计算方法`eval()`：从操作符栈里弹出一个操作数，从操作数栈里弹出两个操作数，进行运算，将结果压入操作数栈。
+
+```java
+private static void eval(){
+    BigDecimal x = new BigDecimal(0);
+    if(op.empty()) { // 异常：操作数冗余
+        throw new NullPointerException("格式错误！");
+    }
+    char c = op.peek(); op.pop();
+    if(c == '(') return; // 左括号无效，直接返回
+    if(num.size() < 1) { // 异常：操作符冗余
+        throw new NullPointerException("格式错误！");
+    }
+    BigDecimal b = num.peek(); num.pop(); // 栈中先弹出的是第二操作数b
+    BigDecimal a = num.peek(); num.pop(); // 后弹出的是第一操作数a
+    switch (c) { // 分情况执行对应运算
+        case '+': x = a.add(b); break;
+        case '-': x = a.subtract(b); break;
+        case '*': x = a.multiply(b); break;
+        case '/':
+            {
+                try {
+                    x = a.divide(b, 8, RoundingMode.HALF_UP);// 保留8位小数，四舍五入
+                } catch(ArithmeticException e) {
+                    throw new ArithmeticException("除数不能为0！");
+                }
+                break;
+            }
+        case '<': { // 移位符号，b>0左移b个bit，b<0右移-b个bit
+            int k = b.intValue();
+            String binStr = Integer.toBinaryString(a.intValue()); // 转为2进制字符串进行移位模拟
+            binStr = Code_Trans.formatBin(binStr); //标准化为32位2进制字符串
+            if(k > 0) { // 左移
+                for(int j = 0; j < k; j ++ )
+                    binStr = binStr + "0";
+                binStr = binStr.substring(k, k + 32); // 截取低位部分
+            } else { // 右移
+                for(int j = 0; j > k; j -- )
+                    binStr = "0" + binStr;
+                binStr = binStr.substring(0, 32); // 截取高位部分
+            }
+            String hexStr = Code_Trans.binToHex(binStr); // 先转为16进制字符串
+            String dec = new Translation(hexStr).Decimal(); // 再转为10进制字符串
+            x = new BigDecimal(Integer.parseInt(dec)); // 再转为int，然后转为BigDecimal
+            break;
+        }
+            // 逻辑运算就转为int后直接运算，然后再转为BigDecimal
+        case '|' : x = new BigDecimal(a.intValue() | b.intValue()); break;
+        case '^' : x = new BigDecimal(a.intValue() ^ b.intValue()); break;
+        case '&' : x = new BigDecimal(a.intValue() & b.intValue()); break;
+    }
+    num.push(x); // 运算结果再压入栈
+}
+```
+
+2.主计算方法`compute()`：  为了用程序实现中缀表达式的计算，我们可以利用栈将中缀表达式转换为后缀表达式，再计算后缀表达式（即使用上方的eval()方法）。在这里，同样是利用栈进行一个中缀转后缀的操作，只不过我们的计算不是得到整个后缀表达式之后再计算，而是在中缀转后缀的过程中进行计算。因为后缀表达式是从前往后依次扫描，因此我们一旦确定了前部的某一段（包含开头），就可以提前将其计算出来，再放到原来位置，不影响最终结果。
+
+```java
+public static String compute(String infixExpression){ // 得到一个中缀表达式字符串，返回对应的计算结果
+    init();
+    int n = infixExpression.length();
+    for (int i = 0; i < n; i ++ ) { // 逐字符扫描表达式
+        if (Character.isDigit(infixExpression.charAt(i))) { // 当前字符是数字
+            BigDecimal x = new BigDecimal(0);
+            int j = i, dot = 0; // j记录从下标i开始一直扫描到哪个字符的下标， dot记录小数点位数
+            while (j < n && Character.isDigit(infixExpression.charAt(j))) { // 向后扫描获取完整的数字
+                x = x.multiply(BigDecimal.valueOf(10));
+                x = x.add(BigDecimal.valueOf(infixExpression.charAt(j) - '0'));
+                j ++;
+            }
+            if (j < n && infixExpression.charAt(j) == '.') { //遇到小数点，处理小数部分
+                j ++;
+                BigDecimal y = new BigDecimal(0);
+                while (j < n && Character.isDigit(infixExpression.charAt(j))) { // 向后扫描获取完整的数字
+                    y = y.multiply(BigDecimal.valueOf(10));
+                    y = y.add(BigDecimal.valueOf(infixExpression.charAt(j) - '0'));
+                    j ++;
+                    dot ++;
+                }
+                for (int k = 0; k < dot; k ++ ) { //根据dot的值来将扫描到的整数变为小数
+                    y = y.divide(BigDecimal.valueOf(10), 8, RoundingMode.HALF_UP); // 8位小数，四舍五入
+                }
+                x = x.add(y); // 整数部分加上小数部分
+            }
+            i = j - 1; // 由于上面for循环会++， 想要下面处理j下标的字符，i就要在j前面一个下标的位置
+            num.push(x);
+        } else if (infixExpression.charAt(i) == '(') // 左括号，直接压入栈
+            op.push(infixExpression.charAt(i));
+        else if (infixExpression.charAt(i) == ')') { // 右括号，一直eval()计算，直到操作数栈顶为左括号
+            while(op.peek() != '(')
+                eval();
+            op.pop(); // 把左括号弹出，表示括号里的全部处理完毕
+        } else // 否则是其他的操作符: + - * / < | ^ &
+        {
+            char c = infixExpression.charAt(i);
+            if(c != '-' || (i > 0 && (Character.isDigit(infixExpression.charAt(i - 1)) || infixExpression.charAt(i - 1) == ')'))) {
+                // 当前"-"不是负号
+                // 如果操作符栈不空，并且栈顶符号优先级大于等于当前符号优先级，就一直eval()计算
+                while (!op.empty() && priMap.get(op.peek()) >= priMap.get(c))
+                    eval();
+                op.push(c); // 此时保证当前字符的优先级在栈中是严格最高的
+            } else { // 当前"-"是负号，则相当于(-1) * (后面的一系列表达式)
+                num.push(BigDecimal.valueOf(-1)); // 操作数栈压入-1后，下面相当于扫描到一个"*"
+                while(!op.empty() && priMap.get(op.peek()) >= priMap.get('*')) // 同上
+                    eval();
+                op.push('*');
+            }
+        }
+    }
+    while (num.size() > 1) //使最后只剩一个数
+        eval();
+    return num.peek().stripTrailingZeros().toPlainString(); //去末尾0且变为PlainString(无科学计数法)
+}
+```
+
+3.补充：
+
+- 初始化方法`init()`，用于初始化哈希表和栈，因为是静态存储，所以一次计算后里面还有数据，下一次计算前需要清空。
+- 为了计算方便，使用`BigDecimal`类模拟，精度较高，方便四舍五入，且可自动除末尾0。
 
 #### 2）进制转换
 
@@ -703,13 +844,139 @@ String B_trans(String s) {
 
 ```
 
-
-
 ## 三、**算法分析**
 
 ### 1、计算器计算算法分析
 
+#### 1）BigDecimal
 
+Java在java.math包中提供的API类BigDecimal，用来对超过16位有效位的数进行精确的运算。双精度浮点型变量double可以处理16位有效数。在实际应用中，需要对更大或者更小的数进行运算和处理。float和double只能用来做科学计算或者是工程计算，在商业计算中要用java.math.BigDecimal。BigDecimal所创建的是对象，我们不能使用传统的+、-、*、/等[算术运算符](https://baike.baidu.com/item/算术运算符/9324947)直接对其对象进行数学运算，而必须调用其相对应的方法。方法中的参数也必须是BigDecimal的对象。构造器是类的特殊方法，专门用来创建对象，特别是带有参数的对象。
+
+为了提高精度和返回结果的标准化，Calculator类中所有的操作数以BigDecimal类对象的形式表示。
+
+#### 2）逆波兰表达式
+
+逆波兰式（Reverse Polish notation，RPN，或逆波兰记法），也叫后缀表达式（将运算符写在操作数之后）。其在计算机看来是比较简单易懂的结构，因为计算机普遍采用的内存结构是栈式结构，它执行先进后出的顺序。
+
+**定义：**
+
+一个[表达式](https://baike.baidu.com/item/表达式)E的后缀形式可以如下定义：
+
+（1）如果E是一个变量或[常量](https://baike.baidu.com/item/常量)，则E的[后缀式](https://baike.baidu.com/item/后缀式)是E本身。
+
+（2）如果E是E1 op E2形式的表达式，这里op是任何二元操作符，则E的后缀式为E1'E2' op，这里E1'和E2'分别为E1和E2的后缀式。
+
+（3)如果E是（E1）形式的表达式，则E1的后缀式就是E的后缀式。
+
+如：我们平时写a+b，这是[中缀表达式](https://baike.baidu.com/item/中缀表达式)，写成[后缀表达式](https://baike.baidu.com/item/后缀表达式)就是：ab+
+
+(a+b)*c-(a+b)/e的后缀表达式为：
+
+(a+b)*c-(a+b)/e
+
+→((a+b)*c)((a+b)/e)-
+
+→((a+b)c*)((a+b)e/)-
+
+→(ab+c*)(ab+e/)-
+
+→ab+c*ab+e/-
+
+**中缀表达式转换为逆波兰表达式一般算法：**
+
+------
+
+首先需要分配2个栈，一个作为临时存储运算符的栈S1（含一个结束符号），一个作为存放结果（逆波兰式）的栈S2（空栈），S1栈可先放入优先级最低的运算符#，注意，中缀式应以此最低优先级的运算符结束。可指定其他字符，不一定非#不可。从中缀式的左端开始取字符，逐序进行如下步骤：
+
+（1）若取出的字符是操作数，则分析出完整的运算数，该操作数直接送入S2栈。
+
+（2）若取出的字符是运算符，则将该运算符与S1栈栈顶元素比较，如果该运算符(不包括括号运算符)优先级高于S1栈栈顶运算符（包括左括号）优先级，则将该运算符进S1栈，否则，将S1栈的栈顶运算符弹出，送入S2栈中，直至S1栈栈顶运算符（包括左括号）低于（不包括等于）该[运算符优先级](https://baike.baidu.com/item/运算符优先级/4752611)时停止弹出运算符，最后将该运算符送入S1栈。
+
+（3）若取出的字符是“（”，则直接送入S1栈顶。
+
+（4）若取出的字符是“）”，则将距离S1栈栈顶最近的“（”之间的运算符，逐个出栈，依次送入S2栈，此时抛弃“（”。
+
+（5）重复上面的1~4步，直至处理完所有的输入字符。
+
+（6）若取出的字符是“#”，则将S1栈内所有运算符（不包括“#”），逐个出栈，依次送入S2栈。
+
+完成以上步骤，S2栈便为逆波兰式输出结果。不过S2应做一下逆序处理。
+
+------
+
+**后缀表达式的计算方法：**
+
+新建一个表达式，如果当前字符为变量或者为数字，则压栈，如果是运算符，则将栈顶两个元素弹出作相应运算，结果再入栈，最后当表达式扫描完后，栈里的就是结果。
+
+#### 3）算法设计
+
+显然，计算器从用户处得到的是中缀表达式，期望得到的是该中缀表达式的结果。对于计算机来说，后缀表达式更方便计算，为了用程序实现中缀表达式的计算，我们可以利用栈将中缀表达式转换为后缀表达式，得到后缀表达式后在进行计算。也就是说，我们可以将整个计算过程分为两步：
+
+①利用中缀表达式转换为逆波兰表达式一般算法，将用户输入的中缀表达式转为后缀表达式和
+
+②计算后缀表达式，返回结果。
+
+诚然，这样做是可以的。但是实际上，我们并不需要知道中缀表达式对应的完整后缀表达式是什么样的，我们只需要得**某个运算符**在**后缀表达式**中对应的**两个操作数**是什么，然后得到其对应的运算结果，再将其放回后缀表达式中。
+
+因此，我们可以在中缀转后缀的过程中，就进行后缀表达式的计算，**对中缀转后缀的一般方法进行修改**，具体实现方法如下：
+
+------
+
+首先需要分配2个栈，一个作为临时存储运算符的栈S1（含一个结束符号），一个作为存放~~结果（逆波兰式）~~**操作数（包括原操作数和经过计算得到的中间量）**的栈S2（空栈），S1栈可先放入优先级最低的运算符#，注意，中缀式应以此最低优先级的运算符结束。可指定其他字符，不一定非#不可**（这里使用左括号"("，是为了下面步骤（3）的代码可以和（2）合并）**。**此外，为了进行实现边转换边计算，定义了一个方法 eval()，作用是进行后缀表达式的单次计算，即从S1中弹出一个操作符，再从S2中弹出两个操作数，进行计算后将结果压入S2**。从中缀式的左端开始取字符，逐序进行如下步骤：
+
+（1）若取出的字符是操作数，则分析出完整的运算数，该操作数直接送入S2栈。
+
+（2）若取出的字符是运算符，则将该运算符与S1栈栈顶元素比较，如果该运算符(不包括括号运算符)优先级高于S1栈栈顶运算符（包括左括号）优先级，则将该运算符进S1栈，否则，~~将S1栈的栈顶运算符弹出，送入S2栈中~~**进行eval()操作**，直至S1栈栈顶运算符（包括左括号）低于（不包括等于）该运算符优先级时停止弹出运算符，最后将该运算符送入S1栈。
+
+（3）若取出的字符是“（”，则直接送入S1栈顶。
+
+（4）若取出的字符是“）”，则将距离S1栈栈顶最近的“（”之间的运算符，逐个~~出栈，依次送入S2栈~~**进行eval()操作**，此时抛弃“（”。
+
+（5）重复上面的1~4步，直至处理完所有的输入字符。
+
+（6）~~若取出的字符是“#”，则将S1栈内所有运算符（不包括“#”），逐个出栈，依次送入S2栈。~~**此时，S2栈中操作数若大于1，则不断执行eval()操作，直至S2中只有一个元素，即为表达式最后的结果，将其返回。**
+
+------
+
+**流程图**：
+
+![](algorithm/CalculatorProcessTransparentBackground.png)
+
+**eval操作实现：**
+
+从操作数栈中弹出两个操作数b, a，从操作符栈中弹出操作数c，根据c的值来确定进行何种运算。其中除了移位操作的几种操作较为简便，移位操作实现流程：
+
+1.将a转为32位整型int；
+
+2.再转为二进制字符串BinaryString；
+
+3.将二进制字符串高位添0到长度为32位；
+
+4.根据b的值在低位添0(b>0)，截取低位部分；在高位添0(b<0)，截取高位部分；
+
+5.截取下来的32位二进制字符串转为16进制字符串；// 使用自定义类Code_Trans中的binToHex方法
+
+6.16进制字符串转为10进制字符串；// 使用自定义类Translation中的Decimal方法
+
+7.10进制字符串转为BigDecimal，后压入栈。
+
+至此，实现了中缀表达式的计算算法。
+
+#### 4）复杂度分析
+
+1.空间复杂度：$O(n)$。栈空间大小不超过表达式长度$n$，哈希表空间为常数。
+
+2.时间复杂度：
+
+①扫描表达式：$O(n)$
+
+②HashMap：一次$get$是$O(1)$，最多不超过$n$个操作符，复杂度$O(n)$
+
+③Stack：操作符栈$O(n)$，操作数栈由于中缀表达式中有不超过$n$个操作数，每两个操作数可以结合为一个操作数，所以复杂度为$O(n \times logn)$
+
+④eval操作：eval操作最多执行$n \times logn$次，其中移位操作涉及到转换为2进制字符串，其字符串操作次数为常数，所以复杂度为$O(n \times logn)$
+
+所以总的时间复杂度为$O(n \times logn)$。
 
 ### 2、进制转换算法分析
 
@@ -852,6 +1119,12 @@ String B_trans(String s) {
 | 12   | BC8F5DD6[SHE]10[2'SC]               | BC8F     | 右移             | T【√】F【】 |
 
 测试用例2：
+| 序号 | 测试输入                            | 测试输出  | 测试说明           | 测试结果    |
+| ---- | ----------------------------------- | --------- | ------------------ | ----------- |
+| 1    | [DEC]114.514[*]2.33[=]              | 266.87162 | 10进制小数运算     | T【√】F【】 |
+| 2    | [DEC]2.33[/]2.33[=]                 | 1         | 10进制小数运算     | T【√】F【】 |
+| 3    | [DEC]2[/]3[=]                       | 0.333333  | 无限小数的四舍五入 | T【√】F【】 |
+
 
 根据文档未涉及到的内容进行测试：重点是10进制小数运算、10进制无限小数的四舍五入、10进制负数、16进制负数、算数逻辑组合混合运算、 异或运算、错误信号的触发和消除、清除和回退按钮。
 
@@ -875,35 +1148,9 @@ String B_trans(String s) {
 
 #### 2）混合进制计算器的输入
 
-由于错误信号的处理主要是在事件处理阶段进行的，而这款计算器的逻辑功能和市面上常见的计算器有比较大的区别，由于功能的独特，错误也很有特点。对于计算器的功能和错误信号的认识也是在不断调试和反复阅读功能文档的过程中不断迭代升级的。
-
-**问题1**：关闭按钮事件处理问题。
-
-**解决方法1**：由于OFF按钮需要把整个JFrame对象关闭掉，需要能够引用到frame，所以写在main函数中。通过创建窗口事件使得计算器窗口关闭。
-
-**问题2**：在有错误信号产生的时候还是可以输入。
-
-**解决方案2**：在所有按钮的事件处理中，首先判断错误信号是否存在。
-
-**问题3**：10进制表达式中有小数点，转换成16进制算法报错。
-
-**解决方案3**：增加错误信号类型，增加小数点检测。
-
-**问题4**：由于括号的加入，进制转换出现bug
-
-**解决法案4**：进制转换的if判断增加一个逻辑
-
-**问题5**：计算结果是10的整倍数返回科学计数法，导致表达式带有小数点使得后处理函数误判。
-
-**解决方案5**：使用BigDecimal中的stripTrailingZeros().toPlainString()方法处理得到的结果。
-
 #### 3）**计算器计算算法**
 
-
-
 #### 4）进制转换
-
-
 
 #### 5）反码补码
 
@@ -939,6 +1186,10 @@ String B_trans(String s) {
 
 [8] 狂风吹我心. 二进制原码，反码，补码 [DB/OL]. (2021-11-21)  [2022-6-22]https://zhuanlan.zhihu.com/p/99082236
 
+[9]百度百科.逆波兰式.https://baike.baidu.com/item/%E9%80%86%E6%B3%A2%E5%85%B0%E5%BC%8F
+
+[10]百度百科.BigDecimal.https://baike.baidu.com/item/BigDecimal
+
 
 
 ## 六、**团队成员姓名和联系方法**
@@ -949,12 +1200,12 @@ String B_trans(String s) {
 
 **梁涛**		邮箱：332604872@qq.com	  Github:3dfish2dweb
 
-负责内容：计算器计算算法设计，文档计算器算法设计、分析、测试部分
+负责内容：计算器计算算法设计，计算器反码补码算法优化补充，文档计算器算法设计、分析、测试部分
 
 **杨德宝**	邮箱：2495499315@qq.com	Github:Lyr3
 
 负责内容：计算器进制转换算法设计，文档进制转换算法设计、分析、测试部分
 
-**佘振东**	邮箱：2577484662@.qq.com	Github:fsbbts
+**佘振东**	邮箱：2577484662@qq.com	Github:fsbbts
 
-负责内容：计算器反码补码算法设计，文档反码补码算法设计、分析、测试部分  
+负责内容：计算器反码补码算法设计，文档反码补码算法设计、分析、测试部分

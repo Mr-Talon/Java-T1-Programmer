@@ -1,4 +1,3 @@
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
@@ -132,7 +131,7 @@ public class Calculator {
                     op.push(c); // 此时保证当前字符的优先级在栈中是最高的
                 } else { // 当前"-"是负号，则相当于(-1) * (后面的一系列表达式)
                     num.push(BigDecimal.valueOf(-1)); // 操作数栈压入-1后，下面相当于扫描到一个"*"
-                    while(!op.empty() && priMap.get(op.peek()) > priMap.get('*')) // 同上
+                    while(!op.empty() && priMap.get(op.peek()) >= priMap.get('*')) // 同上
                         eval();
                     op.push('*');
                 }
