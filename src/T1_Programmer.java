@@ -576,6 +576,9 @@ public class T1_Programmer{
             public void actionPerformed(ActionEvent e) {
                 //右括号前面只可能是 右括号或者是操作数
                 if (error==0){
+                    if(expression==""||currentString==""){
+                        return;
+                    }
                     if (!notContainSymbol(currentString.substring(1))||currentString.contains("(")){    //右括号前面是左括号或者是其他操作符  语法错误
                         error=PARENTHESES_ERROR;
                         grammarError.setText("GE");
@@ -642,7 +645,8 @@ public class T1_Programmer{
         HEXButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (error==0||error==HEX_INPUT_WHEN_DEX||error==SC1_WHEN_DEC||error==SC2_WHEN_DEC){
+                if (error==0||error==HEX_INPUT_WHEN_DEX||error==SC1_WHEN_DEC||error==SC2_WHEN_DEC||error==AND_WHEN_DEC||
+                        error==XOR_WHEN_DEC||error==OR_WHEN_DEC){
                     //16进制按钮可以消除10进制的语法错误
                     //只有在当前输入框中只有数字的时候才有转换成十六进制
                     if (currentString.length()>0&&state==DEC&&notContainPARENTHESES(currentString)){
@@ -660,7 +664,8 @@ public class T1_Programmer{
                     DECState.setText("         ");
                     HEXState.setText("HEX");
 
-                    if (error==HEX_INPUT_WHEN_DEX||error==SC1_WHEN_DEC||error==SC2_WHEN_DEC){   //如果已经触发了输入语法错误 通过转换状态应该消除错误信号
+                    if (error==HEX_INPUT_WHEN_DEX||error==SC1_WHEN_DEC||error==SC2_WHEN_DEC||error==AND_WHEN_DEC||
+                            error==XOR_WHEN_DEC||error==OR_WHEN_DEC){   //如果已经触发了输入语法错误 通过转换状态应该消除错误信号
                         error=0;
                         grammarError.setText("         ");
                     }
