@@ -62,4 +62,9 @@ public static byte[]hexStr2BinArr(String hexString){
 public static String hexStr2BinStr(String hexString){
         return bytes2BinStr(hexStr2BinArr(hexString));
         }
+        public static void main(String[] args) {
+                String s= hexStr2BinStr("2");
+                System.out.println(s);
+        }
 }
+
