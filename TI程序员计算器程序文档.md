@@ -806,7 +806,7 @@ public static String compute(String infixExpression){ // 得到一个中缀表�
 - 初始化方法`init()`，用于初始化哈希表和栈，因为是静态存储，所以一次计算后里面还有数据，下一次计算前需要清空。
 - 为了计算方便，使用`BigDecimal`类模拟，精度较高，方便四舍五入，且可自动除末尾0。
 
-#### ==2）进制转换==
+#### 2）进制转换
 
 **主要分析：**进制转换包括两个类Translation、BintoHex，其中类Translaion完成十六进制与十进制的互相转换，在转化过程中，因为需要实现负数的转换，调用BintoHex实现十六进制字符串与二进制字节数组的互相转换，来方便负数的转换。Translation类有两个主要方法，Decimal()以及Hexadecimal()，分别实现十六进制转为十进制，十进制转为十六进制。BintoHex类中有两个主要方法，bin2HexStr()以及hexStr2BinArr,分别实现将二进制数组转换为十六进制字符串以及将十六进制转换为二进制字节数组 。
 
@@ -920,8 +920,6 @@ public static byte[]hexStr2BinArr(String hexString){
         }
 
 ```
-
-
 
 #### 3）取反码取补码
 
@@ -1039,7 +1037,7 @@ Java在java.math包中提供的API类BigDecimal，用来对超过16位有效位�
 
 （1）若取出的字符是操作数，则分析出完整的运算数，该操作数直接送入S2栈。
 
-（2）若取出的字符是运算符，则将该运算符与S1栈栈顶元素比较，如果该运算符(不包括括号运算符)优先级高于S1栈栈顶运算符（包括左括号）优先级，则将该运算符进S1栈，否则，将S1栈的栈顶运算符弹出，送入S2栈中，直至S1栈栈顶运算符（包括左括号）低于（不包括等于）该[运算符优先级](https://baike.baidu.com/item/运算符优先级/4752611)时停止弹出运算符，最后将该运算符送入S1栈。
+（2）若取出的字符是运算符，则将该运算符与S1栈栈顶元素比较，如果该运算符(不包括括号运算符)优先级高于S1栈栈顶运算符（包括左括号）优先级，则将该运算符进S1栈，否则，将S1栈的栈顶运算符弹出，送入S2栈中，直至S1栈栈顶运算符（包括左括号）低于（不包括等于）该运算符优先级时停止弹出运算符，最后将该运算符送入S1栈。
 
 （3）若取出的字符是“（”，则直接送入S1栈顶。
 
@@ -1398,7 +1396,7 @@ for (int i = 0; i < str.length; i++) {       //O(n)
 
 #### ==3）**计算器计算算法**==
 
-#### ==4）进制转换==
+#### 4）进制转换
 
 **问题1**：0~16十进制数转十六进制进入死循环
 
@@ -1412,7 +1410,7 @@ for (int i = 0; i < str.length; i++) {       //O(n)
 
 **解决方案3**：判断返回字符串并将再次循环判断去零字符串，直至字符串不含前缀'0
 
-
+#### 5）取反码补码
 
 **问题1**：对字符串的单个进行操作后报错。
 
@@ -1444,11 +1442,11 @@ for (int i = 0; i < str.length; i++) {       //O(n)
 
 [7] PesenX. 深入理解Java String类 [DB/OL]. (2018-6-28) [2022-6-3].https://blog.csdn.net/ifwinds/article/details/80849184?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522165427507616781667854186%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=165427507616781667854186&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-80849184-null-null.142
 
-[8] 狂风吹我心. 二进制原码，反码，补码 [DB/OL]. (2021-11-21)  [2022-6-22]https://zhuanlan.zhihu.com/p/99082236
+[8] 狂风吹我心. 二进制原码，反码，补码 [DB/OL]. (2021-11-21)  [2022-6-2]https://zhuanlan.zhihu.com/p/99082236
 
-[9]百度百科.逆波兰式[DB/OL].https://baike.baidu.com/item/%E9%80%86%E6%B3%A2%E5%85%B0%E5%BC%8F
+[9]百度百科.逆波兰式[DB/OL].(2021-12-15)[2022-6-4]https://baike.baidu.com/item/%E9%80%86%E6%B3%A2%E5%85%B0%E5%BC%8F
 
-[10]百度百科.BigDecimal[DB/OL].https://baike.baidu.com/item/BigDecimal
+[10]百度百科.BigDecimal[DB/OL].(2021-7-17)[2022-6-4]https://baike.baidu.com/item/BigDecimal
 
 
 
