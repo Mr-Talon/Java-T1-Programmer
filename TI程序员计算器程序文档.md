@@ -1444,11 +1444,11 @@ for (int i = 0; i < str.length; i++) {       //O(n)
 
 [7] PesenX. 深入理解Java String类 [DB/OL]. (2018-6-28) [2022-6-3].https://blog.csdn.net/ifwinds/article/details/80849184?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522165427507616781667854186%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=165427507616781667854186&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-80849184-null-null.142
 
-[8] 狂风吹我心. 二进制原码，反码，补码 [DB/OL]. (2021-11-21)  [2022-6-22]https://zhuanlan.zhihu.com/p/99082236
+[8] 狂风吹我心. 二进制原码，反码，补码 [DB/OL]. (2021-11-21)  [2022-6-2]https://zhuanlan.zhihu.com/p/99082236
 
-[9]百度百科.逆波兰式[DB/OL].https://baike.baidu.com/item/%E9%80%86%E6%B3%A2%E5%85%B0%E5%BC%8F
+[9]百度百科.逆波兰式[DB/OL].(2021-12-15)[2022-6-4]https://baike.baidu.com/item/%E9%80%86%E6%B3%A2%E5%85%B0%E5%BC%8F
 
-[10]百度百科.BigDecimal[DB/OL].https://baike.baidu.com/item/BigDecimal
+[10]百度百科.BigDecimal[DB/OL].(2021-7-17)[2022-6-4]https://baike.baidu.com/item/BigDecimal
 
 
 
