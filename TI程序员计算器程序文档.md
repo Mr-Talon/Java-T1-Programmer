@@ -414,7 +414,7 @@ MinusButton.addActionListener(new ActionListener() {
                     if (!Objects.equals(expression, "")){   //由于减号可以作为负号出现在总表达式的第一个字符 所以增加了这个判断
                         String lastCharE=expression.substring(expression.length()-1);
                         if (notContainSymbol(lastCharE)&&!currentString.contains("-")){
-                            expression+="-";        //最后jia
+                            expression+="-";        //最后加上j
                         }
                     }
                 }
