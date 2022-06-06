@@ -1081,7 +1081,7 @@ Java在java.math包中提供的API类BigDecimal，用来对超过16位有效位�
 
 **流程图**：
 
-<img src="algorithm/CalculatorProcessTransparentBackground.png" style="zoom: 80%;" />
+<img src="pic/CalculatorProcessTransparentBackground.png" style="zoom: 80%;" />
 
 <center style="font-size:16px;color:#000000">图11、计算算法流程图</center> 
 
@@ -1424,7 +1424,23 @@ for (int i = 0; i < str.length; i++) {       //O(n)
 
 **解决方案8**：如果取补码产生了负数，按照数学表达式的要求增加括号。
 
-#### ==3）**计算器计算算法**==
+#### 3）**计算器计算算法**
+
+**问题1**：由于使用到的两个栈是静态成员，所以只会初始化一次，进行一次计算后栈内仍会有冗余数据，这时候会导致偶发一些不可遇见的错误。
+
+**解决方案1**：每次调用计算方法的时候把栈清空。
+
+**问题2**：对于不可预见的输入错误，没有检测机制。
+
+解决方案2：增加异常检测机制，抛出对应的异常，如中间量除以0和操作符与操作数个数不符等。
+
+**问题3**：精度问题。由于需要进行小数运算，double类型的精度不足，导致计算的结果有8位小数以内的误差。
+
+**解决方案3**：改用BigDecimal类。
+
+**问题4**：BigDecimal的toString()方法返回字符串会出现后缀0和科学计数法。
+
+解决方案4：使用stripTrailingZeros().toPlainString()。
 
 #### 4）进制转换
 
